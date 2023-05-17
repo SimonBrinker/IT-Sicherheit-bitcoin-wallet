@@ -8,7 +8,6 @@ from register_window import RegisterWindow
 class Application(object):
     def __init__(self):
         self.window = Window1()
-        self.window.mainloop()
 
 
 class User(object):
@@ -126,6 +125,7 @@ class Window1(customtkinter.CTk):
         customtkinter.set_appearance_mode("Dark")
         self.appearance_mode_optionmenu.set("Dark")
         self.ui_scaling_optionmenu.set("100%")
+        self.mainloop()
 
     def switch_server(self, network:Network):
         if network == Network.MAINNET:
@@ -161,8 +161,9 @@ class Window1(customtkinter.CTk):
             # self.withdraw()
             if self.wallet_window is None or not self.wallet_window.winfo_exists():
                 print("Found no open Wallet-Window, creating new one!")
-                self.wallet_window = WalletWindow(wallet)  # create window if its None or destroyed
-                self.wallet_window.focus_set()
+                self.destroy()
+                self.wallet_window = WalletWindow(wallet, self)  # create window if its None or destroyed
+
             else:
                 print("Found a Wallet-Window-Instance running, focusing it!")
                 self.wallet_window.focus()  # if window exists focus it
