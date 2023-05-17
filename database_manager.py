@@ -25,7 +25,7 @@ def setup():
 def create_table():
     cursor.execute("CREATE TABLE IF NOT EXISTS users (username TEXT, network TEXT)")
 
-def register(username:str, password:str, network:Network):
+def register(username:str, password:str, network:Network, createNew:bool, private_key=""):
     setup()
     cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
     result = cursor.fetchone()
@@ -33,7 +33,7 @@ def register(username:str, password:str, network:Network):
         print(f"User with username '{username}' alredy exists")
         return False
     cursor.execute("INSERT INTO users VALUES (?, ?)", (username, network.value))
-    wallet = Wallet(username, network, True)
+    wallet = Wallet(username, network, createNew, private_key)
     store_private_key(username, password, wallet.private_key)
     connection.commit()
 

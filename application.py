@@ -23,8 +23,18 @@ class Window1(customtkinter.CTk):
         self.selected_network = Network.MAINNET
         #region UI
         ##################################################################################
-        # Window settings:
-        self.geometry("1100x580")
+        # Window settings:#
+
+        width = 1100 # Width 
+        height = 580 # Height
+        
+        screen_width = self.winfo_screenwidth()  
+        screen_height = self.winfo_screenheight() 
+        
+        x = (screen_width/2) - (width/2)
+        y = (screen_height/2) - (height/2)
+
+        self.geometry('%dx%d+%d+%d' % (width, height, x, y))
         self.title("CryptoUI")
         self.wallet_window = None
         self.register_window = None
@@ -172,12 +182,23 @@ class Window1(customtkinter.CTk):
             print("Login not successful, 'Username' and 'Password' dont match, or do not exist!")
 
     def create_new_account(self):
+        self.withdraw()
+        self.register_window = RegisterWindow(self.selected_network)
+        self.register_window.protocol("WM_DELETE_WINDOW", self.on_close_register)
+
+
+        """
         if self.register_window is None or not self.wallet_window.winfo_exists():
             print("Found no open Register-Window, creating new one!")
             self.register_window = RegisterWindow(self.selected_network)  # create window if its None or destroyed
         else:
             print("Found a Register-Window-Instance running, focusing it!")
             self.register_window_window.focus()  # if window exists focus it
+        """
+
+    def on_close_register(self):
+        self.register_window.destroy()
+        self.deiconify()
 
     def get_value(self):
         return [self.username_input_field.get(), self.password_input_field.get()]
