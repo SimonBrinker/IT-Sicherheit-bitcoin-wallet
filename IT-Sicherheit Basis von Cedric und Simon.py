@@ -13,9 +13,9 @@ Original file is located at
 # Libarys zum erstellen des Wallets und zum Transferieren von Bitcoins
 """
 
-pip install ecdsa
+# pip install ecdsa
 
-pip install base58
+# pip install base58
 
 import secrets
 import ecdsa
