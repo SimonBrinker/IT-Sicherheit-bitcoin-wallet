@@ -79,7 +79,7 @@ class RegisterWindow(customtkinter.CTkToplevel):
 
     def toggle_Private_Key_Entry(self):
 
-        if customtkinter.get_appearance_mode() is "Dark":
+        if customtkinter.get_appearance_mode() == "Dark":
             if self.create_btc_address.get() == "on":
                 
                 self.private_key_entry.configure(state="disabled", fg_color=['gray75', 'gray18'], border_color=['gray60', 'gray24'], placeholder_text="disabled")
@@ -87,7 +87,7 @@ class RegisterWindow(customtkinter.CTkToplevel):
                 self.private_key_entry.configure(state="normal")
                 self.private_key_entry.configure(state="disabled", fg_color=['#F9F9FA', '#343638'], border_color=['#979DA2', '#565B5E'], placeholder_text="Enter Private Key")
 
-        elif customtkinter.get_appearance_mode() is "Light":
+        elif customtkinter.get_appearance_mode() == "Light":
             if self.create_btc_address.get() == "on":
                 self.private_key_entry.configure(state="disabled", fg_color=['gray75', 'gray18'], border_color=['gray60', 'gray24'], placeholder_text="disabled")
             else:
