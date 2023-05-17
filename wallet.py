@@ -4,6 +4,7 @@ import hashlib
 import binascii
 import secrets
 from enum import Enum
+import struct
 
 class Network(Enum):
     MAINNET = "btc"
@@ -30,22 +31,6 @@ class Wallet(object):
         sk = ecdsa.SigningKey.from_string(bytes.fromhex(self.private_key), curve=ecdsa.SECP256k1)
         # Zudem bekommt der Private Key noch den Prefix 04
         return (bytes.fromhex("04") + sk.verifying_key.to_string())
-
-    # Generiert aus dem Public Key die Public Adresse
-    # def get_public_address(self):
-    #     # Als erstes wird die SHA256 Hashfunktion auf den Public Key angewendet
-    #     address = hashlib.sha256(self.public_key).digest()
-
-    #     # Danach wird ein neues Hash-Objekt vom Typ Ripemd160 erzeugt und als h gespeichert
-    #     h = hashlib.new('ripemd160')
-
-    #     # Darauf folgend wird der gehashte Public Key noch einmal gehasht diesmal von der Ripemd160 Hashfunktion
-    #     h.update(address)
-
-    #     # Der Hashwert wird aus dem Hashobjekt h in die Variable h gespeichert und returned
-    #     address = h.digest()
-
-    #     return address
 
     # Generiert die Testnet Adresse aus dem Public Key
     def get_public_address(self):
@@ -95,7 +80,7 @@ class Wallet(object):
         return script
 
     # Fügt die eingegebenen Daten plus ein Paar extra Daten in ein Dictionary
-    def get_raw_transaction(from_addr:bytes, to_addr:bytes, transaction_hash, output_index, satoshis_spend):
+    def get_raw_transaction(self, from_addr:bytes, to_addr:bytes, transaction_hash, output_index, satoshis_spend):
 
         # Erstellt das Dictionary und fügt ein paar daten hinzu
         # Für einige Daten werden oben schon beschriebene Methoden genutzt für andere werden Standartiesierte Daten verwendet
@@ -107,13 +92,13 @@ class Wallet(object):
         transaction["output_index"] = output_index
 
         transaction["sig_script_length"] = 25
-        transaction["sig_script"] = get_p2pkh_script(from_addr)
+        transaction["sig_script"] = self.get_p2pkh_script(from_addr)
 
         transaction["sequence"] = 0xffffffff
         transaction["num_outputs"] = 1
         transaction["satoshis"] = satoshis_spend
         transaction["pubkey_length"] = 25
-        transaction["pubkey_script"] = get_p2pkh_script(to_addr)
+        transaction["pubkey_script"] = self.get_p2pkh_script(to_addr)
         transaction["lock_time"] = 0
         transaction["hash_code_type"] = 1
 
@@ -153,16 +138,16 @@ class Wallet(object):
         return raw_transaction
 
     # Signiert die Transaktion
-    def get_transaction_signature(transaction, private_key):
+    def get_transaction_signature(self, transaction, private_key):
 
         # Hier wird die transaction gepacked und in einer Variable gespeichert
-        packed_raw_transaction = get_packed_transaction(transaction)
+        packed_raw_transaction = self.get_packed_transaction(transaction)
 
         # Die Transaction wird dann mit der SHA256 Hashfunktion gehast und abgespeichert
         hash = hashlib.sha256(hashlib.sha256(packed_raw_transaction).digest()).digest()
 
         # Man generiert via Methoden den Public Key aus dem Private Key
-        public_key = private_Key_To_Public_Key(private_key)
+        public_key = self.private_Key_To_Public_Key(private_key)
 
         # Der Key wird durch den Private Key der via Ecdsa kodiert wird signiert
         key = ecdsa.SigningKey.from_string(bytes.fromhex(private_key), curve=ecdsa.SECP256k1)
@@ -183,18 +168,25 @@ class Wallet(object):
         return sigscript
 
     # Diese Methode erstellt eine Signed Transaction mithilfe der oben Beschriebenen Methoden
-    def get_signed_transaction(from_addr, from_private_key, to_addr, transaction_hash, output_index, satoshis):
+    def get_signed_transaction(self, from_addr, from_private_key, to_addr, transaction_hash, output_index, satoshis):
 
         # Es werden durch die oben gezeigten Methoden eine raw transaction erstellt und diese kriegt eine Signatur
-        raw = get_raw_transaction(from_addr, to_addr, transaction_hash, output_index, satoshis)
-        signature = get_transaction_signature(raw, from_private_key)
+        raw = self.get_raw_transaction(from_addr, to_addr, transaction_hash, output_index, satoshis)
+        signature = self.get_transaction_signature(raw, from_private_key)
         
         # Es werden noch ein paar Einträge dem Dictionary hinzugefügt bevor die Transaction verpackt und zurück gegeben wird
         raw["sig_script_length"] = len(signature)
         raw["sig_script"] = signature
         del raw["hash_code_type"]
 
-        return get_packed_transaction(raw)
+        return self.get_packed_transaction(raw)
+    #endregion
+
+    #region strings
+
+    def get_address_string(self) -> str:
+        return self.address.decode()
+
     #endregion
 
     def __str__(self) -> str:

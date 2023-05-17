@@ -43,10 +43,15 @@ def login(username:str, password:str) -> Wallet:
     setup()
     cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
     result = cursor.fetchone()
+    network:Network
+    if result[1] == 'btc-testnet':
+        network = Network.TESTNET
+    else:
+        network = Network.MAINNET
     if result is not None:
         private_key = load_private_key(username, password)
         if private_key:
-            return Wallet(username, result[1], False, private_key)
+            return Wallet(username, network, False, private_key)
     return False
 
 def close():
@@ -93,7 +98,7 @@ def main():
     setup()
     username = "Simon"
     password = "12345"
-    register(username, password, Network.TESTNET)
+    register(username, password, Network.TESTNET, True)
     wallet = login(username,password)
     print(wallet)
     close()
