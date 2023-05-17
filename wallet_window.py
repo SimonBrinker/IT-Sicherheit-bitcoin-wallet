@@ -3,9 +3,11 @@ import customtkinter
 from wallet import Wallet, Network
 import database_manager
 
-class WalletWindow(customtkinter.CTkToplevel):
-    def __init__(self, wallet: Wallet):
+class WalletWindow(customtkinter.CTk):
+    def __init__(self, wallet: Wallet, old_root:customtkinter.CTk):
         super().__init__()
+        
+        #region UI
 
         ##################################################################################
         # User information:
@@ -18,16 +20,14 @@ class WalletWindow(customtkinter.CTkToplevel):
 
         ##################################################################################
         # Grid layout settings:
-        self.grid_columnconfigure(0, weight=0)
-        self.grid_columnconfigure(1, weight=1)
-        self.grid_columnconfigure(2, weight=0)
-        self.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10), weight=1)
+        self.grid_columnconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9), weight=1)
+        self.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9), weight=1)
 
         ##################################################################################
         # Creating sidebar:
         self.sidebar_frame = customtkinter.CTkFrame(self,
                                                     corner_radius=0)
-        self.sidebar_frame.grid(row=0, column=0, rowspan=11, sticky="nsew")
+        self.sidebar_frame.grid(row=0, column=0, rowspan=10, sticky="nsew")
 
         # Creating Server-switch widgets:
         self.logo_label = customtkinter.CTkLabel(self.sidebar_frame,
@@ -61,7 +61,7 @@ class WalletWindow(customtkinter.CTkToplevel):
         self.ad_bar_frame = customtkinter.CTkFrame(self.sidebar_frame, width=150, height=200)
         self.ad_bar_frame.grid(row=6, column=0)
         self.ad_label = customtkinter.CTkLabel(self.ad_bar_frame,
-                                               text="Here could be ur add!",
+                                               text="Here could be ur ad!",
                                                font=customtkinter.CTkFont(weight="bold"))
         self.ad_label.grid(row=6, column=0, padx=(10, 10), pady=(85, 85))
 
@@ -77,29 +77,30 @@ class WalletWindow(customtkinter.CTkToplevel):
 
         ##################################################################################
         # Profile frame with widgets:
-        self.profile_frame = customtkinter.CTkFrame(self, width=600, height=300, corner_radius=10)
-        self.profile_frame.grid(row=0, column=1, columnspan=3, rowspan=3, padx=(10, 650), pady=(15, 10), sticky="nsew")
+        self.profile_frame = customtkinter.CTkFrame(self, corner_radius=10)
+        self.profile_frame.grid(row=0, column=1, columnspan=9, rowspan=3)
         self.profile_label = customtkinter.CTkLabel(self.profile_frame,
                                                     text="Profile",
                                                     font=customtkinter.CTkFont(size=20, weight="bold"))
-        self.profile_label.grid(row=0, column=1, columnspan=2, padx=(15, 650), pady=(5, 15))
+        self.profile_label.grid(row=0, column=2, columnspan=2)
         self.username_label = customtkinter.CTkLabel(self.profile_frame,
-                                                     text=f"Username",
+                                                     text=f"Username: {wallet.username}",
                                                      font=customtkinter.CTkFont(size=16, weight="bold"))
-        self.username_label.grid(row=1, column=1, padx=(0, 575), pady=(0, 5))
-        self.username_from_user_label = customtkinter.CTkLabel(self.profile_frame,
-                                                               text=wallet.username,
-                                                               font=customtkinter.CTkFont(size=16, weight="bold"))
-        self.username_from_user_label.grid(row=1, column=1, padx=(0, 350), pady=(0, 5))
+        self.username_label.grid(row=1, column=0)
         self.bitcoin_address_label = customtkinter.CTkLabel(self.profile_frame,
-                                                            text=f"Address",
+                                                            text=f"Address: {wallet.address}",
                                                             font=customtkinter.CTkFont(size=16, weight="bold"))
-        self.bitcoin_address_label.grid(row=1, column=1, padx=(15, 575), pady=(50, 5))
+        self.bitcoin_address_label.grid(row=2, column=2, padx=(15, 0))
         ##################################################################################
+
+        #endregion
+
         # Setting the default values:
         customtkinter.set_appearance_mode("Dark")
         self.appearance_mode_optionmenu.set("Dark")
         self.ui_scaling_optionmenu.set("100%")
+        self.mainloop()
+        
 
     ##################################################################################
 
@@ -117,7 +118,7 @@ class WalletWindow(customtkinter.CTkToplevel):
 
 def main():
     wallet = database_manager.login("Simon", "12345")
-    run = WalletWindow(wallet)
+    run = WalletWindow(wallet, None)
     run.mainloop()
 
 if __name__ == '__main__':
