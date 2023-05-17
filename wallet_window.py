@@ -1,6 +1,7 @@
 
 import customtkinter
 from wallet import Wallet, Network
+import database_manager
 
 class WalletWindow(customtkinter.CTkToplevel):
     def __init__(self, wallet: Wallet):
@@ -87,7 +88,7 @@ class WalletWindow(customtkinter.CTkToplevel):
                                                      font=customtkinter.CTkFont(size=16, weight="bold"))
         self.username_label.grid(row=1, column=1, padx=(0, 575), pady=(0, 5))
         self.username_from_user_label = customtkinter.CTkLabel(self.profile_frame,
-                                                               text="Placeholder",
+                                                               text=wallet.username,
                                                                font=customtkinter.CTkFont(size=16, weight="bold"))
         self.username_from_user_label.grid(row=1, column=1, padx=(0, 350), pady=(0, 5))
         self.bitcoin_address_label = customtkinter.CTkLabel(self.profile_frame,
@@ -113,3 +114,11 @@ class WalletWindow(customtkinter.CTkToplevel):
 
     def logout(self):
         self.destroy()
+
+def main():
+    wallet = database_manager.login("Simon", "12345")
+    run = WalletWindow(wallet)
+    run.mainloop()
+
+if __name__ == '__main__':
+    main()
