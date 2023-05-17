@@ -9,13 +9,6 @@ class Application(object):
     def __init__(self):
         self.window = Window1()
 
-
-class User(object):
-    def __init__(self, username: str, password : str):
-        self.username = username
-        self.password = password
-
-
 class Window1(customtkinter.CTk):
     def __init__(self):
         super().__init__()
@@ -187,6 +180,7 @@ class Window1(customtkinter.CTk):
         self.register_window = RegisterWindow(self.selected_network)
         self.register_window.protocol("WM_DELETE_WINDOW", self.on_close_register)
 
+        self.after(500, self.check_for_register_window)
 
         """
         if self.register_window is None or not self.wallet_window.winfo_exists():
@@ -200,6 +194,12 @@ class Window1(customtkinter.CTk):
     def on_close_register(self):
         self.register_window.destroy()
         self.deiconify()
+
+    def check_for_register_window(self):
+        if self.register_window.winfo_exists():
+            self.after(500, self.check_for_register_window)
+            return
+        self.on_close_register()
 
     def get_value(self):
         return [self.username_input_field.get(), self.password_input_field.get()]
