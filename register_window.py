@@ -84,15 +84,13 @@ class RegisterWindow(customtkinter.CTkToplevel):
                 
                 self.private_key_entry.configure(state="disabled", fg_color=['gray75', 'gray18'], border_color=['gray60', 'gray24'], placeholder_text="disabled")
             else:
-                self.private_key_entry.configure(state="normal")
-                self.private_key_entry.configure(state="disabled", fg_color=['#F9F9FA', '#343638'], border_color=['#979DA2', '#565B5E'], placeholder_text="Enter Private Key")
+                self.private_key_entry.configure(state="normal", fg_color=['#F9F9FA', '#343638'], border_color=['#979DA2', '#565B5E'], placeholder_text="Enter Private Key")
 
         elif customtkinter.get_appearance_mode() == "Light":
             if self.create_btc_address.get() == "on":
                 self.private_key_entry.configure(state="disabled", fg_color=['gray75', 'gray18'], border_color=['gray60', 'gray24'], placeholder_text="disabled")
             else:
-                self.private_key_entry.configure(state="normal")
-                self.private_key_entry.configure(state="disabled", fg_color=['#F9F9FA', '#343638'], border_color=['#979DA2', '#565B5E'], placeholder_text="Enter Private Key")
+                self.private_key_entry.configure(state="normal", fg_color=['#F9F9FA', '#343638'], border_color=['#979DA2', '#565B5E'], placeholder_text="Enter Private Key")
         
 
         
