@@ -19,17 +19,16 @@ class WalletWindow(customtkinter.CTk):
 
         
         # Grid layout settings:
-        self.grid_columnconfigure(0, weight=20)
-        self.grid_columnconfigure(1, weight=80)
-        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_columnconfigure((2, 3), weight=1)
+        self.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10), weight=1)
 
         
         #region Sidebar
         self.sidebar_frame = customtkinter.CTkFrame(self,
                                                     corner_radius=0)
-        self.sidebar_frame.grid(row=0, column=0, columnspan=1, rowspan=1, sticky="nsew")
+        self.sidebar_frame.grid(row=0, column=0, rowspan=11, sticky="nsew")
 
-        # Creating Server-switch widgets:
         self.logo_label = customtkinter.CTkLabel(self.sidebar_frame,
                                                  text="CryptoUI",
                                                  font=customtkinter.CTkFont(size=30, weight="bold"))
@@ -81,14 +80,15 @@ class WalletWindow(customtkinter.CTk):
         #region Profile frame
 
         self.content = customtkinter.CTkFrame(self, corner_radius=0)
+
         self.content.grid_columnconfigure((0, 1, 2), weight=1)
         self.content.grid_rowconfigure((0, 1, 2, 3, 4, 5), weight=1)
-        self.content.grid(column=1, row = 0, sticky="nesw", padx=(0,5))
+        self.content.grid(column=1, row = 0, rowspan=11, columnspan=3, sticky="nesw")
 
         self.profile_frame = customtkinter.CTkFrame(self.content, corner_radius=10)
         self.profile_frame.grid_rowconfigure((0,1,2,3), weight=1)
         self.profile_frame.grid_columnconfigure((0), weight=1)
-        self.profile_frame.grid(row=0, column=0, columnspan = 3, stick="ewn")
+        self.profile_frame.grid(row=0, column=0, columnspan = 3, stick="ewn", padx=(15,15))
         
         self.profile_label = customtkinter.CTkLabel(self.profile_frame,
                                                     text="Profile",
