@@ -83,7 +83,7 @@ class WalletWindow(customtkinter.CTk):
         self.content = customtkinter.CTkFrame(self, corner_radius=0)
         self.content.grid_columnconfigure((0, 1, 2), weight=1)
         self.content.grid_rowconfigure((0, 1, 2, 3, 4, 5), weight=1)
-        self.content.grid(column=1, row = 0, sticky="nesw")
+        self.content.grid(column=1, row = 0, sticky="nesw", padx=(0,5))
 
         self.profile_frame = customtkinter.CTkFrame(self.content, corner_radius=10)
         self.profile_frame.grid_rowconfigure((0,1,2,3), weight=1)
@@ -111,6 +111,50 @@ class WalletWindow(customtkinter.CTk):
         self.balance_lable.grid(row=3, column=0, pady=5, padx=5)
 
         #endregion Profile
+
+        #region Transaction
+
+        self.transacton_frame = customtkinter.CTkFrame(self.content, corner_radius=10)
+        self.transacton_frame.grid_rowconfigure((0,1,2,3), weight=1)
+        self.transacton_frame.grid_columnconfigure(0, weight=1)
+        self.transacton_frame.grid_columnconfigure(1, weight=4)
+        self.transacton_frame.grid(row=1, column=0, columnspan = 3, stick="ewn", padx=(15,15))
+
+        self.transaction_title_lable = customtkinter.CTkLabel(self.transacton_frame,
+                                                    text="Transaktion",
+                                                    font=customtkinter.CTkFont(size=20, weight="bold"))
+        self.transaction_title_lable.grid(row=0, column = 0, columnspan = 2, pady = (5,5))
+        # Inputfeld für die Zieladdresse
+
+        self.transaction_target_address_lable = customtkinter.CTkLabel(self.transacton_frame,
+                                                                       text = "Zieladresse:",
+                                                                       font=customtkinter.CTkFont(weight="bold"))
+        self.transaction_target_address_lable.grid(row=1, column = 0, pady = (5,5))
+
+        self.transaction_target_address = customtkinter.CTkEntry(self.transacton_frame,
+                                                                width=300,
+                                                                placeholder_text = "Zieladresse")
+        self.transaction_target_address.grid(row=1, column = 1, pady = (5,5), sticky = "we", padx=(0,5))
+
+        #Inputfeld für die Anzahl der Bitcoin die überwiesen werden sollen
+        #Lable
+        self.transaction_amount_lable = customtkinter.CTkLabel(self.transacton_frame,
+                                                                       text = "Anzahl:",
+                                                                       font=customtkinter.CTkFont(weight="bold"))
+        self.transaction_amount_lable.grid(row=2, column = 0, pady = (5,5))
+        #Input
+        self.transaction_amount = customtkinter.CTkEntry(self.transacton_frame,
+                                                                width=150,
+                                                                placeholder_text = "Anzahl Bitcoin")
+        self.transaction_amount.grid(row=2, column = 1, pady = (5,5), sticky="ew", padx=(0,5))
+
+        #Button zum senden der Transaktion
+        self.transaction_btn_send_transaction = customtkinter.CTkButton(self.transacton_frame,
+                                                                        width=150,
+                                                                        text = "Senden")
+        self.transaction_btn_send_transaction.grid(row=3, column = 0, columnspan = 2, pady = (5,15), padx =(50,50), sticky="ew")
+
+        #endregion
 
         #endregion UI
 
