@@ -5,6 +5,7 @@ import binascii
 import secrets
 from enum import Enum
 import struct
+import blockcypher
 
 class Network(Enum):
     MAINNET = "btc"
@@ -168,8 +169,9 @@ class Wallet(object):
         return sigscript
 
     # Diese Methode erstellt eine Signed Transaction mithilfe der oben Beschriebenen Methoden
-    def get_signed_transaction(self, from_addr, from_private_key, to_addr, transaction_hash, output_index, satoshis):
-
+    def get_signed_transaction(self, to_addr, transaction_hash, output_index, satoshis):
+        from_addr = self.address
+        from_private_key = self.private_key
         # Es werden durch die oben gezeigten Methoden eine raw transaction erstellt und diese kriegt eine Signatur
         raw = self.get_raw_transaction(from_addr, to_addr, transaction_hash, output_index, satoshis)
         signature = self.get_transaction_signature(raw, from_private_key)
@@ -188,6 +190,10 @@ class Wallet(object):
         return self.address.decode()
 
     #endregion
+
+    def send_transaction(self, target_address, amount_in_btc):
+        amount_in_satoshis = int(amount_in_btc) * 100000000
+        transaction_hex = self.get_signed_transaction()
 
     def __str__(self) -> str:
         res = ""
