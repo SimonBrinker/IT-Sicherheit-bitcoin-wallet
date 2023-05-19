@@ -4,12 +4,7 @@ from wallet import Wallet, Network
 from wallet_window import WalletWindow
 from register_window import RegisterWindow
 
-
-class Application(object):
-    def __init__(self):
-        self.window = Window1()
-
-class Window1(customtkinter.CTk):
+class MainWindow(customtkinter.CTk):
     def __init__(self):
         super().__init__()
         self.selected_network = Network.MAINNET
@@ -175,9 +170,13 @@ class Window1(customtkinter.CTk):
             self.password_input_field.configure(fg_color="RED")
             print("Login not successful, 'Username' and 'Password' dont match, or do not exist!")
 
+    def login_on_register(self, wallet):
+        self.destroy()
+        self.wallet_window = WalletWindow(wallet, self)  # create window if its None or destroyed
+
     def create_new_account(self):
         self.withdraw()
-        self.register_window = RegisterWindow(self.selected_network)
+        self.register_window = RegisterWindow(self.selected_network, self)
         self.register_window.protocol("WM_DELETE_WINDOW", self.on_close_register)
 
         self.after(500, self.check_for_register_window)
@@ -205,7 +204,7 @@ class Window1(customtkinter.CTk):
         return [self.username_input_field.get(), self.password_input_field.get()]
 
 def main():
-    run = Application()
+    run = MainWindow()
 
 
 if __name__ == '__main__':
