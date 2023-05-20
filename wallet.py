@@ -5,7 +5,6 @@ import binascii
 import secrets
 from enum import Enum
 import struct
-import blockcypher
 
 class Network(Enum):
     MAINNET = "btc"
@@ -182,6 +181,38 @@ class Wallet(object):
         del raw["hash_code_type"]
 
         return self.get_packed_transaction(raw)
+    
+
+    # Wählt die txids aus die für eine transaktion verwendet werden sollen
+    # Von: https://www.oreilly.com/library/view/mastering-bitcoin/9781491902639/ch05.html
+    def select_outputs_greedy(self, unspent, min_value):
+        # Fail if empty.
+        if not unspent:
+            return None
+        # Partition into 2 lists.
+        lessers = [utxo for utxo in unspent if utxo['value'] < min_value]
+        greaters = [utxo for utxo in unspent if utxo['value'] >= min_value]
+        key_func = lambda utxo: utxo['value']
+        if greaters:
+            # Not-empty. Find the smallest greater.
+            min_greater = min(greaters)
+            change = min_greater['value'] - min_value
+            return [min_greater], change
+        # Not found in greaters. Try several lessers instead.
+        # Rearrange them from biggest to smallest. We want to use the least
+        # amount of inputs as possible.
+        lessers.sort(key=key_func, reverse=True)
+        result = []
+        accum = 0
+        for utxo in lessers:
+            result.append(utxo)
+            accum += utxo['value']
+            if accum >= min_value:
+                change = accum - min_value
+                return result, change
+        # No results found.
+        return None, 0
+
     #endregion
 
     #region strings
@@ -192,8 +223,24 @@ class Wallet(object):
     #endregion
 
     def send_transaction(self, target_address, amount_in_btc):
-        amount_in_satoshis = int(amount_in_btc) * 100000000
+        amount_in_satoshis = int(round(float(amount_in_btc) * 100000000))
+        import wallet_api
+
+        available_tx = wallet_api.get_spendable_transactions(self)
+
+        tx_ids, change = self.select_outputs_greedy(available_tx, amount_in_satoshis)
+        if tx_ids is None:
+            print(f"Not enough funds")
+            return
+        
+        print(f"Txs to spend: {tx_ids}\nChange: {change}")
+
+
+        # generate the transaction
         transaction_hex = self.get_signed_transaction()
+        print(f"\n\nTX hash:\n{transaction_hex}\n")
+        # send the transaction
+        # wallet_api.send_transaction(transaction_hex)
 
     def __str__(self) -> str:
         res = ""
