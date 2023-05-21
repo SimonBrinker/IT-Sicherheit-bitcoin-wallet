@@ -189,11 +189,31 @@ class WalletWindow(customtkinter.CTk):
     def send_transaction(self):
         target_address = self.transaction_target_address.get()
         amount_in_btc = self.transaction_amount.get()
+        valid = True
+        if target_address == "":
+            self.transaction_target_address.configure(fg_color=['#F9F9FA', '#343638'])
+            valid = False
+        else:
+            self.transaction_target_address.configure(fg_color=['gray75', 'gray18'])
+        if amount_in_btc == "":
+            self.transaction_amount.configure(fg_color=['#F9F9FA', '#343638'])
+            valid = False
+        else:
+            self.transaction_amount.configure(fg_color=['gray75', 'gray18'])
+        self.update()
+        if not valid:
+            return
+        
         success = self.wallet.send_transaction(target_address, amount_in_btc)
+        if success:
+            pass
+            #self.transacton_frame.
 
 def main():
     wallet = database_manager.login("Simon", "12345")
+    #wallet_to = database_manager.login("SimonTarget", "12345")
     print(wallet)
+    #print(wallet_to)
     run = WalletWindow(wallet, None)
     run.mainloop()
 

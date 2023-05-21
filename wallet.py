@@ -5,6 +5,7 @@ import binascii
 import secrets
 from enum import Enum
 import struct
+import copy
 
 class Network(Enum):
     MAINNET = "btc"
@@ -29,6 +30,13 @@ class Wallet(object):
     def get_public_key(self):
         # Dafür wird der ECDSA (Elliptic Curve Digital Signature Algorithm) genutzt
         sk = ecdsa.SigningKey.from_string(bytes.fromhex(self.private_key), curve=ecdsa.SECP256k1)
+        # Zudem bekommt der Private Key noch den Prefix 04
+        return (bytes.fromhex("04") + sk.verifying_key.to_string())
+
+    # Generiert aus dem Private Key einen Public Key von dem sich nicht auf den Private Key zurückschließen lässt
+    def private_Key_To_Public_Key(self, s):
+        # Dafür wird der ECDSA (Elliptic Curve Digital Signature Algorithm) genutzt
+        sk = ecdsa.SigningKey.from_string(bytes.fromhex(s), curve=ecdsa.SECP256k1)
         # Zudem bekommt der Private Key noch den Prefix 04
         return (bytes.fromhex("04") + sk.verifying_key.to_string())
 
@@ -63,42 +71,71 @@ class Wallet(object):
         # Gibt die Adresse zurück
         return address
 
+    # Generiert aus dem Public Key die Public Adresse
+    def get_pubkey_hash(self, public_key):
+        # Als erstes wird die SHA256 Hashfunktion auf den Public Key angewendet
+        address = hashlib.sha256(public_key).digest()
+
+        # Danach wird ein neues Hash-Objekt vom Typ Ripemd160 erzeugt und als h gespeichert
+        h = hashlib.new('ripemd160')
+
+        # Darauf folgend wird der gehashte Public Key noch einmal gehasht diesmal von der Ripemd160 Hashfunktion
+        h.update(address)
+
+        # Der Hashwert wird aus dem Hashobjekt h in die Variable h gespeichert und returned
+        address = h.digest()
+
+        return address
+
     #endregion
 
     #region Transaction
     # Ist die Methode für den "Pay to Public Key Hash"
-    def get_p2pkh_script(pub_key:bytes):
+    def get_p2pkh_script(self, b58_address:str):
 
         # Fügt Hex Wert als Byte der Variable script hinzu
         script = bytes.fromhex("76a914")
-
-        # Fügt den Public Key der Variable script hinzu
-        script += pub_key
+        
+        decoded_address = base58.b58decode(b58_address)
+        binary_address = decoded_address[1:-4]
+        script += binary_address
 
         # Fügt noch einen Hexwert als Bytes der Variable Script hinzu und gibt diese zurück
         script += bytes.fromhex("88ac")
         return script
 
     # Fügt die eingegebenen Daten plus ein Paar extra Daten in ein Dictionary
-    def get_raw_transaction(self, from_addr:bytes, to_addr:bytes, transaction_hash, output_index, satoshis_spend):
+    def get_raw_transaction(self, from_addr:bytes, to_addr:str, transaction_hash:list, satoshis_spend:int, amount_to_self:int):
 
         # Erstellt das Dictionary und fügt ein paar daten hinzu
         # Für einige Daten werden oben schon beschriebene Methoden genutzt für andere werden Standartiesierte Daten verwendet
         transaction = {}
         transaction["version"] = 1
-        transaction["num_inputs"] = 1
-
-        transaction["transaction_hash"] = bytes.fromhex(transaction_hash)[::-1]
-        transaction["output_index"] = output_index
-
-        transaction["sig_script_length"] = 25
-        transaction["sig_script"] = self.get_p2pkh_script(from_addr)
-
-        transaction["sequence"] = 0xffffffff
+        transaction["num_inputs"] = len(transaction_hash)
+        transaction["transaction_hash"] = []
+        transaction["output_index"] = []
+        transaction["sig_script_length"] = []
+        transaction["sig_script"] = []
+        transaction["sequence"] = []
+        for i, txid in enumerate(transaction_hash):
+            transaction["transaction_hash"].append(bytes.fromhex(txid['tx_hash'])[::-1])
+            transaction["output_index"].append(txid['tx_output_n'])
+            transaction["sig_script_length"].append(25)
+            transaction["sig_script"].append(self.get_p2pkh_script(self.get_address_string()))
+            transaction["sequence"].append(0xffffffff)
+        
         transaction["num_outputs"] = 1
-        transaction["satoshis"] = satoshis_spend
-        transaction["pubkey_length"] = 25
-        transaction["pubkey_script"] = self.get_p2pkh_script(to_addr)
+        transaction["satoshis"] = []
+        transaction["pubkey_length"] = []
+        transaction["pubkey_script"] = []
+        transaction["satoshis"].append(satoshis_spend)
+        transaction["pubkey_length"].append(25)
+        transaction["pubkey_script"].append(self.get_p2pkh_script(to_addr))
+        if amount_to_self > 0:
+            transaction["satoshis"].append(amount_to_self)
+            transaction["pubkey_length"].append(25)
+            transaction["pubkey_script"].append(self.get_p2pkh_script(self.get_address_string()))
+            transaction["num_outputs"] = 2
         transaction["lock_time"] = 0
         transaction["hash_code_type"] = 1
 
@@ -106,29 +143,32 @@ class Wallet(object):
         return transaction
 
     # Verpackt die Daten aus dem Dicitonary in die Richtigen Formate
-    def get_packed_transaction(transaction_dict):
+    def get_packed_transaction(self, transaction_dict):
 
         # Hier wertden einige Daten aus dem Dicitonary in der Richtigen Binärdatenfolge gespeichert
         # "<" sateht für "Little-Endian" Byte folge und das "L" für eubeb 4 Byte Unsigned integer
         # Da es zu viel aufwand wird werde ich nicht auf alle verschiedenen Binärfolgen eingehen
         raw_transaction  = struct.pack("<L", transaction_dict["version"])
         raw_transaction += struct.pack("<B", transaction_dict["num_inputs"])
-        tx_in  = struct.pack("32s", transaction_dict["transaction_hash"])
-        tx_in += struct.pack("<L", transaction_dict["output_index"]) 
-        tx_in += struct.pack("<B", transaction_dict["sig_script_length"])
-        tx_in += struct.pack(str(transaction_dict["sig_script_length"]) + "s", transaction_dict["sig_script"])
-        tx_in += struct.pack("<L", transaction_dict["sequence"])
-        
-        # raw_transaction und tx_in wurden unterschiedlich formatiert und werden nun zusammengefügt
-        raw_transaction += tx_in
+        for i in range(transaction_dict["num_inputs"]):
+            tx_in  = struct.pack("32s", transaction_dict["transaction_hash"][i])
+            tx_in += struct.pack("<L", transaction_dict["output_index"][i]) 
+            tx_in += struct.pack("<B", transaction_dict["sig_script_length"][i])
+            tx_in += struct.pack(str(transaction_dict["sig_script_length"][i]) + "s", transaction_dict["sig_script"][i])
+            tx_in += struct.pack("<L", transaction_dict["sequence"][i])
+            
+            # raw_transaction und tx_in wurden unterschiedlich formatiert und werden nun zusammengefügt
+            raw_transaction += tx_in
 
         raw_transaction += struct.pack("<B", transaction_dict["num_outputs"]) 
-        tx_out  = struct.pack("<q", transaction_dict["satoshis"])
-        tx_out += struct.pack("<B", transaction_dict["pubkey_length"])
-        tx_out += struct.pack("25s", transaction_dict["pubkey_script"]) 
+        for i in range(transaction_dict["num_outputs"]): 
+            tx_out  = struct.pack("<q", transaction_dict["satoshis"][i])
+            tx_out += struct.pack("<B", transaction_dict["pubkey_length"][i])
+            tx_out += struct.pack("25s", transaction_dict["pubkey_script"][i]) 
 
-        # raw_transaction und tx_out wurden unterschiedlich formatiert und werden nun zusammengefügt
-        raw_transaction += tx_out
+            # raw_transaction und tx_out wurden unterschiedlich formatiert und werden nun zusammengefügt
+            raw_transaction += tx_out
+        
         raw_transaction += struct.pack("<L", transaction_dict["lock_time"])
 
         # falls das Dicitonary einen Hash code Type hat wird dieser auch formatiert und angehangen
@@ -143,7 +183,7 @@ class Wallet(object):
         # Hier wird die transaction gepacked und in einer Variable gespeichert
         packed_raw_transaction = self.get_packed_transaction(transaction)
 
-        # Die Transaction wird dann mit der SHA256 Hashfunktion gehast und abgespeichert
+        # Die Transaction wird dann mit der SHA256 Hashfunktion gehashed und abgespeichert
         hash = hashlib.sha256(hashlib.sha256(packed_raw_transaction).digest()).digest()
 
         # Man generiert via Methoden den Public Key aus dem Private Key
@@ -167,17 +207,30 @@ class Wallet(object):
         # Die Signatur wird dann zurückgegeben
         return sigscript
 
+    def signe_transaction(self, transaction_dict, private_key):
+        for i in range(transaction_dict['num_inputs']):
+            temp_dict = copy.deepcopy(transaction_dict)
+            for j in range(temp_dict['num_inputs']):
+                if not j==i:
+                    temp_dict['sig_script_length'][j] = 0
+                    temp_dict['sig_script'][j] = bytes.fromhex("00")
+                #print(temp_dict)
+            signature = self.get_transaction_signature(temp_dict, private_key)
+            transaction_dict["sig_script_length"][i] = len(signature)
+            transaction_dict["sig_script"][i] = signature
+        #print(transaction_dict)
+        return transaction_dict
+
     # Diese Methode erstellt eine Signed Transaction mithilfe der oben Beschriebenen Methoden
-    def get_signed_transaction(self, to_addr, transaction_hash, output_index, satoshis):
+    def get_signed_transaction(self, to_addr:str, transaction_hash, amount_in_satoshis, return_to_self_amount):
         from_addr = self.address
         from_private_key = self.private_key
         # Es werden durch die oben gezeigten Methoden eine raw transaction erstellt und diese kriegt eine Signatur
-        raw = self.get_raw_transaction(from_addr, to_addr, transaction_hash, output_index, satoshis)
-        signature = self.get_transaction_signature(raw, from_private_key)
+        raw = self.get_raw_transaction(from_addr, to_addr, transaction_hash, amount_in_satoshis, return_to_self_amount)
         
-        # Es werden noch ein paar Einträge dem Dictionary hinzugefügt bevor die Transaction verpackt und zurück gegeben wird
-        raw["sig_script_length"] = len(signature)
-        raw["sig_script"] = signature
+        # # Es werden noch ein paar Einträge dem Dictionary hinzugefügt bevor die Transaction verpackt und zurück gegeben wird
+
+        raw = self.signe_transaction(raw, from_private_key)
         del raw["hash_code_type"]
 
         return self.get_packed_transaction(raw)
@@ -226,21 +279,32 @@ class Wallet(object):
         amount_in_satoshis = int(round(float(amount_in_btc) * 100000000))
         import wallet_api
 
+        fee_amount = wallet_api.get_transaction_fee(self)
         available_tx = wallet_api.get_spendable_transactions(self)
-
-        tx_ids, change = self.select_outputs_greedy(available_tx, amount_in_satoshis)
+        if len(available_tx) == 0:
+            print(f"Not enough funds")
+            Exception("Not enough funds")
+            return False
+        needed_amount = amount_in_satoshis + fee_amount
+        tx_ids, change = self.select_outputs_greedy(available_tx, needed_amount)
         if tx_ids is None:
             print(f"Not enough funds")
             return
         
-        print(f"Txs to spend: {tx_ids}\nChange: {change}")
-
+        #print(f"Txs to spend: {tx_ids}\nChange: {change}")
+        return_to_self_amount = change - fee_amount
 
         # generate the transaction
-        transaction_hex = self.get_signed_transaction()
-        print(f"\n\nTX hash:\n{transaction_hex}\n")
+        transaction_hex = self.get_signed_transaction(target_address, tx_ids, amount_in_satoshis, return_to_self_amount).hex()
+        #print(f"\n\nTX hash:\n{transaction_hex}\n")
         # send the transaction
-        # wallet_api.send_transaction(transaction_hex)
+        res = wallet_api.send_transaction(self, transaction_hex)
+        if 'error' in res:
+            print(f"Error sending transaction:{res['error']}")
+            Exception("Error sending transaction")
+            return False
+        print(f"Sending tranaction res: {res}")
+        return True
 
     def __str__(self) -> str:
         res = ""
