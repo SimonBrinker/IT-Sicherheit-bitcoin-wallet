@@ -28,6 +28,8 @@ class MainWindow(customtkinter.CTk):
         self.wallet_window = None
         self.register_window = None
 
+        self.iconbitmap("icon.ico")
+
         ##################################################################################
         # Grid layout settings:
         self.grid_columnconfigure(1, weight=1)
