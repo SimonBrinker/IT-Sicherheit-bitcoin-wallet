@@ -66,11 +66,11 @@ class MainWindow(customtkinter.CTk):
                                                        font=customtkinter.CTkFont(size=18, weight="bold"))
         self.appearance_label.grid(row=5, column=0)
         self.appearance_mode_optionmenu = customtkinter.CTkOptionMenu(self.sidebar_frame,
-                                                                      values=["Dunkel", "Hell", "System"],
+                                                                      values=["Dark", "Light", "System"],
                                                                       command=self.switch_appearance)
         self.appearance_mode_optionmenu.grid(row=7, column=0, pady=(0, 15))
         self.ui_scaling_label = customtkinter.CTkLabel(self.sidebar_frame,
-                                                       text="UI-Scaling",
+                                                       text="UI-Skalierung",
                                                        font=customtkinter.CTkFont(size=18, weight="bold"))
         self.ui_scaling_label.grid(row=8, column=0, pady=(0, 5))
         self.ui_scaling_optionmenu = customtkinter.CTkOptionMenu(self.sidebar_frame,
@@ -95,16 +95,16 @@ class MainWindow(customtkinter.CTk):
 
         # Creating login widgets:
         self.login_label = customtkinter.CTkLabel(self.login_frame,
-                                                  text="Login to Mainnet-Server",
+                                                  text="Login to Mainnet",
                                                   font=customtkinter.CTkFont(size=20, weight="bold"))
         self.login_label.grid(row=5, column=2, padx=(15, 15), pady=(30, 15))
         self.username_input_field = customtkinter.CTkEntry(self.login_frame,
                                                            width=300,
-                                                           placeholder_text="Username")
+                                                           placeholder_text="Benutzername")
         self.username_input_field.grid(row=6, column=2, padx=(15, 15), pady=(10, 10))
         self.password_input_field = customtkinter.CTkEntry(self.login_frame,
                                                            width=300,
-                                                           placeholder_text="Password",
+                                                           placeholder_text="Passwort",
                                                            show="*")
         self.password_input_field.grid(row=7, column=2, padx=(15, 15))
         self.login_button = customtkinter.CTkButton(self.login_frame,
