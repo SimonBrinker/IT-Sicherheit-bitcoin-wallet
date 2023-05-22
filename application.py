@@ -12,6 +12,8 @@ class MainWindow(customtkinter.CTk):
         ##################################################################################
         # Window settings:#
 
+        self.resizable(width=False, height=False)
+
         width = 1100 # Width 
         height = 580 # Height
         
@@ -186,15 +188,6 @@ class MainWindow(customtkinter.CTk):
         self.register_window.protocol("WM_DELETE_WINDOW", self.on_close_register)
 
         self.after(500, self.check_for_register_window)
-
-        """
-        if self.register_window is None or not self.wallet_window.winfo_exists():
-            print("Found no open Register-Window, creating new one!")
-            self.register_window = RegisterWindow(self.selected_network)  # create window if its None or destroyed
-        else:
-            print("Found a Register-Window-Instance running, focusing it!")
-            self.register_window_window.focus()  # if window exists focus it
-        """
 
     def on_close_register(self):
         self.register_window.destroy()

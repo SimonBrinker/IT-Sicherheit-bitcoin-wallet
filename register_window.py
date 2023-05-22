@@ -9,6 +9,8 @@ class RegisterWindow(customtkinter.CTkToplevel):
         # Speichern des MainWindows für die login_on_register Methode
         self.application = application
 
+        self.resizable(width=False, height=False)
+
         #region UI
 
         width = 450  # Breite des Fensters
