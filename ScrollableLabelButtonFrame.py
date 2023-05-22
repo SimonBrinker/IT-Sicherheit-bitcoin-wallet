@@ -1,5 +1,4 @@
 import customtkinter
-import os
 
 class ScrollableLabelButtonFrame(customtkinter.CTkScrollableFrame):
     def __init__(self, master, command=None, **kwargs):
