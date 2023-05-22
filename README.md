@@ -41,7 +41,6 @@
 
 Dieses Projekt wurde im Auftrag von Lukas Osterheider - Kursleiter des IT-Security Kurses der Hochschule Bochum - erstellt. Es handelt sich hierbei, um eine Software, welche dafür gedacht ist Bitcoin-Transaktionen mittels Userinterface zu erstellen.
 
-
 <!-- Technologien -->
 ### Technologien
 <a name="Technologien"></a>
