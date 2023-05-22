@@ -9,6 +9,7 @@ class RegisterWindow(customtkinter.CTkToplevel):
         # Speichern des MainWindows für die login_on_register Methode
         self.application = application
 
+        # Fenster soll nicht resizable sein
         self.resizable(width=False, height=False)
 
         #region UI
@@ -89,8 +90,8 @@ class RegisterWindow(customtkinter.CTkToplevel):
             self.error_Label.configure(text="\nFehler: Der Username muss länger als 4\n und kürzer als 16 Zeichen sein!")
         
         #Validierung des Passworts
-        elif len(password) < 5:
-            self.error_Label.configure(text="\nFehler: Das Passwort muss länger als 5\n Zeichen sein!")
+        elif len(password) < 8:
+            self.error_Label.configure(text="\nFehler: Das Passwort muss länger als 8\n Zeichen sein!")
 
         #Validierung der Passwortbestätigung
         elif password_2 != password:
