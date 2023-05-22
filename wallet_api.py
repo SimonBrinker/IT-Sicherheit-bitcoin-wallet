@@ -40,6 +40,8 @@ def get_transaction_fee(wallet:wallet.Wallet):
 
     # Abrufen der Transaktionsgebühren über die Blockcypher-API für das angegebene Network
     fees = blockcypher.get_blockchain_fee_estimates(coin_symbol=wallet.network.value, api_key=api_key)
-
     # Rückgabe der niedrigsten Gebühr pro Kilobyte (KB), aufgeteilt durch 4 nach unten abgerundet
     return fees['low_fee_per_kb'] // 4
+
+def is_address_valid(address):
+    return blockcypher.is_valid_address(address)

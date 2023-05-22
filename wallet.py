@@ -157,7 +157,7 @@ class Wallet(object):
             tx_in += struct.pack(str(transaction_dict["sig_script_length"][i]) + "s", transaction_dict["sig_script"][i])
             tx_in += struct.pack("<L", transaction_dict["sequence"][i])
             
-            # raw_transaction und tx_in wurden unterschiedlich formatiert und werden nun zusammengefügt
+            # tx_in wird an raw_transacton angehängt
             raw_transaction += tx_in
 
         raw_transaction += struct.pack("<B", transaction_dict["num_outputs"]) 
@@ -166,7 +166,7 @@ class Wallet(object):
             tx_out += struct.pack("<B", transaction_dict["pubkey_length"][i])
             tx_out += struct.pack("25s", transaction_dict["pubkey_script"][i]) 
 
-            # raw_transaction und tx_out wurden unterschiedlich formatiert und werden nun zusammengefügt
+            # tx_out wird an raw_transacton angehängt
             raw_transaction += tx_out
         
         raw_transaction += struct.pack("<L", transaction_dict["lock_time"])
@@ -275,7 +275,7 @@ class Wallet(object):
 
     #endregion
 
-    def send_transaction(self, target_address, amount_in_btc):
+    def send_transaction(self, target_address, amount_in_btc) -> tuple[bool, str]:
         amount_in_satoshis = int(round(float(amount_in_btc) * 100000000))
         import wallet_api
 
@@ -284,12 +284,12 @@ class Wallet(object):
         if len(available_tx) == 0:
             print(f"Not enough funds")
             Exception("Not enough funds")
-            return False
+            return (False, "Nicht genug Guthaben")
         needed_amount = amount_in_satoshis + fee_amount
         tx_ids, change = self.select_outputs_greedy(available_tx, needed_amount)
         if tx_ids is None:
             print(f"Not enough funds")
-            return
+            return (False, "Nicht genug Guthaben")
         
         #print(f"Txs to spend: {tx_ids}\nChange: {change}")
         return_to_self_amount = change - fee_amount
@@ -302,7 +302,7 @@ class Wallet(object):
         if 'error' in res:
             print(f"Error sending transaction:{res['error']}")
             Exception("Error sending transaction")
-            return False
+            return (False, res['error'])
         print(f"Sending tranaction res: {res}")
         return True
 

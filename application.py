@@ -48,7 +48,7 @@ class MainWindow(customtkinter.CTk):
                                                  font=customtkinter.CTkFont(size=30, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=35, pady=(20, 15))
         self.server_label = customtkinter.CTkLabel(self.sidebar_frame,
-                                                   text="Chose Server",
+                                                   text="Netztwerkauswahl",
                                                    font=customtkinter.CTkFont(size=18, weight="bold"))
         self.server_label.grid(row=1, column=0, pady=(0, 5))
         self.server_mainnet_button = customtkinter.CTkButton(self.sidebar_frame,
@@ -62,15 +62,11 @@ class MainWindow(customtkinter.CTk):
 
         # Appearance setting widgets:
         self.appearance_label = customtkinter.CTkLabel(self.sidebar_frame,
-                                                       text="Appearance Settings",
+                                                       text="Aussehen",
                                                        font=customtkinter.CTkFont(size=18, weight="bold"))
         self.appearance_label.grid(row=5, column=0)
-        self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame,
-                                                            text="Mode",
-                                                            font=customtkinter.CTkFont(size=16, weight="bold"))
-        self.appearance_mode_label.grid(row=6, column=0, pady=(0, 5))
         self.appearance_mode_optionmenu = customtkinter.CTkOptionMenu(self.sidebar_frame,
-                                                                      values=["Dark", "Light", "System"],
+                                                                      values=["Dunkel", "Hell", "System"],
                                                                       command=self.switch_appearance)
         self.appearance_mode_optionmenu.grid(row=7, column=0, pady=(0, 15))
         self.ui_scaling_label = customtkinter.CTkLabel(self.sidebar_frame,
@@ -87,7 +83,7 @@ class MainWindow(customtkinter.CTk):
                                                    width= 150, height=200)
         self.ad_bar_frame.grid(row=10, column=0)
         self.ad_label = customtkinter.CTkLabel(self.ad_bar_frame,
-                                               text="Here could be ur ad!",
+                                               text="Hier könnte Ihre Werbung stehen!",
                                                font=customtkinter.CTkFont(weight="bold"))
         self.ad_label.grid(row=10, column=0, padx=(10, 10), pady=(85, 85))
 
@@ -112,12 +108,12 @@ class MainWindow(customtkinter.CTk):
                                                            show="*")
         self.password_input_field.grid(row=7, column=2, padx=(15, 15))
         self.login_button = customtkinter.CTkButton(self.login_frame,
-                                                    text="Login",
+                                                    text="Einlogen",
                                                     width=145,
                                                     command=self.login)
         self.login_button.grid(row=8, column=2, padx=(150, 0), pady=(10, 30))
         self.register_button = customtkinter.CTkButton(self.login_frame,
-                                                       text="Register",
+                                                       text="Registrieren",
                                                        width=145,
                                                        command=self.create_new_account)
         self.register_button.grid(row=8, column=2, padx=(0, 150), pady=(10, 30))

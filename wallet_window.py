@@ -12,6 +12,8 @@ class WalletWindow(customtkinter.CTk):
         # User information:
         self.wallet = wallet
 
+        #variables
+        self.after_hide_message_box_id = None
         #region UI
 
         self.resizable(width=False, height=False)
@@ -101,7 +103,7 @@ class WalletWindow(customtkinter.CTk):
         self.profile_frame = customtkinter.CTkFrame(self.content, corner_radius=10)
         self.profile_frame.grid_rowconfigure((0,1,2,3), weight=1)
         self.profile_frame.grid_columnconfigure((0), weight=1)
-        self.profile_frame.grid(row=0, column=0, columnspan = 3, stick="ewn", padx=(15,15), pady=(0,0))
+        self.profile_frame.grid(row=0, column=0, columnspan = 3, stick="ewn", padx=(15,15), pady=(10, 0))
         
         self.profile_label = customtkinter.CTkLabel(self.profile_frame,
                                                     text="Profile",
@@ -130,7 +132,7 @@ class WalletWindow(customtkinter.CTk):
         self.transaction_dict = {}
 
         self.scrollable_label_button_frame = ScrollFrame(master=self.content, width=300, command=self.label_button_frame_event, corner_radius=10)
-        self.scrollable_label_button_frame.grid(row=1, column=0, columnspan=3 , rowspan=6 ,padx=(15,15), pady=(5,10), sticky="nsew")
+        self.scrollable_label_button_frame.grid(row=2, column=0, columnspan=3 ,padx=(15,15), pady=(10, 0), sticky="nsew")
 
         for transaction in wallet_api.get_transactions(self.wallet)['txs']:
             inputs = ""
@@ -150,7 +152,7 @@ class WalletWindow(customtkinter.CTk):
         self.transacton_frame.grid_rowconfigure((0,1,2,3), weight=1)
         self.transacton_frame.grid_columnconfigure(0, weight=1)
         self.transacton_frame.grid_columnconfigure(1, weight=4)
-        self.transacton_frame.grid(row=7, column=0, columnspan = 3, stick="ewn", padx=(15,15), pady=(0,10))
+        self.transacton_frame.grid(row=1, column=0, columnspan = 3, stick="ewn", padx=(15,15), pady=(10, 0))
 
         self.transaction_title_lable = customtkinter.CTkLabel(self.transacton_frame,
                                                     text="Neue Transaktion",
@@ -189,10 +191,42 @@ class WalletWindow(customtkinter.CTk):
 
         #endregion
 
+        #region Messages
+
+        self.messages = list()
+        self.message_frame = customtkinter.CTkFrame(self.content, width = 300, height = 150, corner_radius=10, fg_color=['gray75', 'gray18'], bg_color=['gray75', 'gray18'])
+        self.message_frame.grid_rowconfigure((0,1), weight=1)
+        self.message_frame.grid_columnconfigure(0, weight=4)
+        self.message_frame.grid_columnconfigure(1, weight=1)
+        self.message_frame.place(anchor = "se", relx= 0.95, rely = 0.95)
+        #self.message_frame.place_forget()
+
+        self.message_title_lable = customtkinter.CTkLabel(self.message_frame,
+                                                    text="Benachrichtigung",
+                                                    font=customtkinter.CTkFont(size=20, weight="bold"))
+        self.message_title_lable.grid(row=0, column = 0, pady = (5,5), padx=10)
+
+        self.message_btn_close = customtkinter.CTkButton(self.message_frame,
+                                                                        width=24,
+                                                                        height=24,
+                                                                        text = "X",
+                                                                        command=self.hide_message_box)
+        self.message_btn_close.grid(row=0, column = 1, padx = (5,5), pady = (5,5), sticky="ew")
+
+        self.message_lable = customtkinter.CTkLabel(self.message_frame,
+                                                    text="dfhdfgdfgdfgfdhfjfgjfjfsdggdf\nhhhhhhhhhhhhhhhhhhhhh",
+                                                    font=customtkinter.CTkFont(size=14),
+                                                    anchor="w",
+                                                    justify="left")
+        self.message_lable.grid(row=1, column = 0, columnspan = 2, pady = (5,5), padx=10, sticky= "nwsw")
+
+        #endregion
+
         #endregion UI
 
         self.update_balance()
-
+        self.hide_message_box()
+        
         # Setting the default values:
         customtkinter.set_appearance_mode("Dark")
         self.appearance_mode_optionmenu.set("Dark")
@@ -221,34 +255,46 @@ class WalletWindow(customtkinter.CTk):
     def logout(self):
         import application
         self.destroy()
+        # create a new application window
         application.start_application()
 
     def update_balance(self):
         balance = wallet_api.get_wallet_balance(self.wallet)
-        self.balance_lable.configure(text=f"Balance: {balance} BTC")
+        self.balance_lable.configure(require_redraw=True, text=f"Balance: {balance} BTC")
 
     def send_transaction(self):
         target_address = self.transaction_target_address.get()
         amount_in_btc = self.transaction_amount.get()
         valid = True
+        message = ""
         if target_address == "":
-            self.transaction_target_address.configure(fg_color=['#F9F9FA', '#343638'])
+            self.transaction_target_address.configure(require_redraw=True, fg_color=['#F9F9FA', '#343638'])
+            message += "Addresse darf nicht leer sein\n"
             valid = False
         else:
-            self.transaction_target_address.configure(fg_color=['gray75', 'gray18'])
+            self.transaction_target_address.configure(require_redraw=True, fg_color=['gray75', 'gray18'])
         if amount_in_btc == "":
-            self.transaction_amount.configure(fg_color=['#F9F9FA', '#343638'])
+            self.transaction_amount.configure(require_redraw=True, fg_color=['#F9F9FA', '#343638'])
+            message += "Anzahl darf nicht leer sein"
             valid = False
         else:
-            self.transaction_amount.configure(fg_color=['gray75', 'gray18'])
-        self.update()
+            self.transaction_amount.configure(require_redraw=True, fg_color=['gray75', 'gray18'])
+        
         if not valid:
+            self.show_message(message, 3)
             return
         
-        success = self.wallet.send_transaction(target_address, amount_in_btc)
+        #check if the target address is valid
+        valid = wallet_api.is_address_valid(target_address)
+        if not valid:
+            self.show_message(f"{target_address} ist keine gültige Addressse", 5)
+            return
+
+        success, message = self.wallet.send_transaction(target_address, amount_in_btc)
         if success:
-            pass
-            #self.transacton_frame.
+            self.show_message("Transaktion erfolgreich gesendet")
+        else:
+            self.show_message(message)
 
     def on_close_transaction_window(self):
         self.transaction_window.destroy()
@@ -260,11 +306,29 @@ class WalletWindow(customtkinter.CTk):
             return
         self.on_close_transaction_window()
 
+    def show_message(self, message:str, duration_s:float = None):
+        if self.after_hide_message_box_id:
+            self.after_cancel(self.after_hide_message_box_id)
+            self.after_hide_message_box_id = None
+
+        self.message_frame.lift()
+        self.message_lable.configure(require_redraw=True, text = message)
+        if duration_s:
+            self.after_hide_message_box_id = self.after(duration_s * 1000, self.hide_message_box)
+            self.message_box_visible = True
+    
+    def hide_message_box(self):
+        self.message_frame.lower()
+        self.message_box_visible = False
+        if self.after_hide_message_box_id:
+            self.after_cancel(self.after_hide_message_box_id)
+            self.after_hide_message_box_id = None
+
 def main():
     wallet = database_manager.login("Simon", "12345")
-    #wallet_to = database_manager.login("SimonTarget", "12345")
+    wallet_to = database_manager.login("SimonTarget", "12345")
     print(wallet)
-    #print(wallet_to)
+    print(wallet_to)
     run = WalletWindow(wallet, None)
     run.mainloop()
 
