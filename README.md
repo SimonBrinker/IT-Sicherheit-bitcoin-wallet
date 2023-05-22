@@ -3,32 +3,39 @@
 ***
 ## Inhaltsverzeichnis
 <!-- Inhaltsverzeichnis -->
-  <ol>
+<ol>
     <li>
-      <a href="#Allgemeine-Informationen">Über das Project</a>
-      <ul>
-        <li><a href="#Technologien">Technologien</a></li>
-      </ul>
+        <a href="#Allgemeine-Informationen">Über das Project</a>
+        <ul><li><a href="#Technologien">Technologien</a></li></ul>
     </li>
     <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#voraussetzungen">Voraussetzungen</a></li>
-        <li><a href="#installation">Installation</a>
-            <ul>
-                <li><a href="#konsole">Mit Konsole</a></li>
-                <li><a href="#ohneKonsole">Ohne Konsole</a></li>
-            <ul>
-            </ul>
-        </li>
-      </ul>
+        <a href="#getting-started">Getting Started</a>
+        <ul>
+            <li><a href="#voraussetzungen">Voraussetzungen</a></li>
+            <li>
+                <a href="#installation">Installation</a>
+                <ul>
+                    <li><a href="#konsole">Mit Konsole</a></li>
+                    <li><a href="#ohneKonsole">Ohne Konsole</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#anleitung">Anleitung</a>
+                <ul>
+                    <li><a href="start">Starten der Anwendung</a></li>
+                    <li><a href="register">Anlegen eines Accounts</a></li>
+                    <li><a href="login">Login</a></li>
+                    <li><a href="profile">Profil</a></li>
+                    <li><a href="utilities">Einstellungen</a></li>
+                </ul>
+            </li>
+        </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#mitwirkende">Mitwirkende des Projektes</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-  </ol>
-  
+</ol>
+
 ***
 <!-- ABOUT THE PROJECT -->
 ## Über das Projekt
@@ -119,7 +126,86 @@ _Unten findest du zwei Beispiele wie du CryptoUI bei dir installieren kannst!_
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ***
+<!-- Anleitung -->
+## Anleitung
+<a name="anleitung"></a>
 
+### Starten der Anwendung
+<a name="start"></a>
 
+Zum starten von CryptoUI muss man die 'application.py'-Datei ausführen.
+
+<div align="center">
+    <img src="images/start.png" alt="application-picture" width="350" height="80">
+</div>
+
+### Anlegen eines Accounts
+<a name="register"></a>
+
+Um einen Account anzulegen muss man folgende Eingabefelder mit Werten belgen:
+* Username: Der Username darf mindestens 5 maximal 15 Zeichen enthalten.
+* Password: Das Passwort muss länger als 8 Zeichen sein. Mindestens eine Zahl oder ein Sonderzeichen
+  und mindestens ein Groß- und Kleinbuchstaben enthalten.
+* Falls kein "privatkey" vorhanden ist, muss das Häckchen bei "Create new Btc-Address?" gesetzt 
+  werden.
+
+Nachdem man alle Eingabefelder mit Werten belegt hat, muss man auf den "Register!-Butoon" klicken.
+Danach sollte man normalerweise direkt eingeloggt werden.
+
+<div align="center">
+    <img src="images/register.png" alt="register-picture" width="350" height="400">
+</div>
+
+### Anmelden
+<a name="login"></a>
+
+Um sich anzumelden muss man im Startfenster seine Benutzerdaten eingeben. Benutzt man die Anwendung
+zum ersten Mal, muss man zuvor einen Benutzer anlegen. CryptoUI speichert die Benutzerdaten der User
+lokal auf dem Gerät und greift mithilfe einer Api auf Informationen wie zum Beispiel den Kontostand zu.
+
+<div align="center">
+    <img src="images/login.png" alt="login-picture" width="350" height="400">
+</div>
+
+### Der richtige Umgang im Profil
+<a name="profile"></a>
+
+Im oberen Part des Profils werden die Benutzerinformationen angezeigt. Man kann dort den Benutzernamen des aktuellen Kontos, die Bitcoin-Adresse und seinen Kontostand in Btc oder tBtc
+betrachten.
+
+In der Mitte des Fensters ist ein verschiebares Fenster, in welchem alle getätigten Transaktionen angezeigt werden. 
+
+Im unteren Part kann man eine Transaktion erstellen, in dem man die Felder für "Zieladresse" und "Anzahl Bitcoin" mit den entsprechenden Werten belegt. Zum senden der Transaktion muss man seine Eingabe nun nurnoch mit einem Klick auf den "Send-Button" bestätigen. 
+
+<div align="center">
+    <img src="images/profile.png" alt="profile-picture" width="650" height="400">
+</div>
+
+### Einstellungen
+<a name="utilities"></a>
+
+Mit den Einstellungen lassen sich global einige Parameter anpassen:
+* Mithilfe der zwei Buttons zur Auswahl des Servers kann man zwischen BTC-Mainnet und BTC-Testnet 
+  server wechseln.
+* Mithilfe der Dropdown-Menües lässt sich das Interface äußerlich anpassen. Es ist dadurch möglich
+  zwischen Light- und Darkmode zu wechseln und die Skalierung des Interfaces zu ändern.
+
+<div align="center">
+    <img src="images/utilities.png" alt="profile-picture" width="350" height="700">
+</div>
+
+***
+## Mitwirkende des Projektes
+<a name="mitwirkende"></a>
+
+Alle Mitglieder die am Projekt mitgewirkt haben, haben sich im gleichenmaße beteildigt.
+
+* Cedric Kranz
+* Cengizhan Ömür
+* Emre Akarsu
+* Keanu Pastuschka
+* Simon Brinker
+
+***
 
 
