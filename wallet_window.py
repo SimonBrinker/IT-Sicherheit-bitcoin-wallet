@@ -51,19 +51,15 @@ class WalletWindow(customtkinter.CTk):
 
         # Appearance setting widgets:
         self.appearance_label = customtkinter.CTkLabel(self.sidebar_frame,
-                                                       text="Appearance Settings",
+                                                       text="Aussehen",
                                                        font=customtkinter.CTkFont(size=18, weight="bold"))
         self.appearance_label.grid(row=1, column=0)
-        self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame,
-                                                            text="Mode",
-                                                            font=customtkinter.CTkFont(size=16, weight="bold"))
-        self.appearance_mode_label.grid(row=2, column=0, pady=(0, 5))
         self.appearance_mode_optionmenu = customtkinter.CTkOptionMenu(self.sidebar_frame,
                                                                       values=["Dark", "Light", "System"],
                                                                       command=self.switch_appearance)
         self.appearance_mode_optionmenu.grid(row=3, column=0, pady=(0, 15))
         self.ui_scaling_label = customtkinter.CTkLabel(self.sidebar_frame,
-                                                       text="UI-Scaling",
+                                                       text="UI-Skalierung",
                                                        font=customtkinter.CTkFont(size=18, weight="bold"))
         self.ui_scaling_label.grid(row=4, column=0, pady=(0, 5))
         self.ui_scaling_optionmenu = customtkinter.CTkOptionMenu(self.sidebar_frame,
@@ -75,22 +71,21 @@ class WalletWindow(customtkinter.CTk):
         self.ad_bar_frame = customtkinter.CTkFrame(self.sidebar_frame, width=150, height=200)
         self.ad_bar_frame.grid(row=6, column=0)
         self.ad_label = customtkinter.CTkLabel(self.ad_bar_frame,
-                                               text="Here could be ur ad!",
+                                               text="Hier könnte Ihre\nWerbung stehen!",
                                                font=customtkinter.CTkFont(weight="bold"))
         self.ad_label.grid(row=6, column=0, padx=(10, 10), pady=(85, 85))
 
         # Creating logout widgets:
         self.logout_label = customtkinter.CTkLabel(self.sidebar_frame,
-                                                   text="Switch User",
+                                                   text="Benutzer\nwechseln",
                                                    font=customtkinter.CTkFont(size=18, weight="bold"))
         self.logout_label.grid(row=7, column=0, pady=(25, 5))
         self.logout_button = customtkinter.CTkButton(self.sidebar_frame,
-                                                     text="Logout!",
+                                                     text="Ausloggen!",
                                                      command=self.logout)
         self.logout_button.grid(row=8, column=0, sticky="s")
 
         #endregion
-
         
         #region Profile frame
 
@@ -106,23 +101,32 @@ class WalletWindow(customtkinter.CTk):
         self.profile_frame.grid(row=0, column=0, columnspan = 3, stick="ewn", padx=(15,15), pady=(10, 0))
         
         self.profile_label = customtkinter.CTkLabel(self.profile_frame,
-                                                    text="Profile",
+                                                    text="Profil",
                                                     font=customtkinter.CTkFont(size=20, weight="bold"))
         self.profile_label.grid(row=0, column=0, columnspan=1, sticky ="ew")
         
         self.username_label = customtkinter.CTkLabel(self.profile_frame,
-                                                     text=f"Username: {wallet.username}",
-                                                     font=customtkinter.CTkFont(size=16, weight="bold"))
+                                                     text=f"Benutzername: {wallet.username}")
         self.username_label.grid(row=1, column=0, pady=5, padx=5)
         
-        self.bitcoin_address_label = customtkinter.CTkLabel(self.profile_frame,
-                                                            text=f"Address: {wallet.get_address_string()}",
-                                                            font=customtkinter.CTkFont(size=16, weight="bold"))
-        self.bitcoin_address_label.grid(row=2, column=0, pady=5, padx=5)
+        self.profile_address_frame = customtkinter.CTkFrame(self.profile_frame, corner_radius=0, fg_color="transparent")
+        self.profile_address_frame.grid(row=2,column=0)
+        self.profile_address_frame.grid_columnconfigure((0), weight=1)
+        self.profile_address_frame.grid_rowconfigure(0, weight=4)
+        self.profile_address_frame.grid_rowconfigure(1, weight=1)
+
+        self.bitcoin_address_label = customtkinter.CTkLabel(self.profile_address_frame,
+                                                            text=f"Adresse: {wallet.get_address_string()}")
+        self.bitcoin_address_label.grid(row=0, column=0, pady=5, padx=5)
+
+        self.btn_bitcoin_address_copy = customtkinter.CTkButton(self.profile_address_frame,
+                                                                text="Kopieren",
+                                                                command=self.copy_address_to_clipboard)
+        self.btn_bitcoin_address_copy.grid(row=0, column=1, padx=20)
+
 
         self.balance_lable = customtkinter.CTkLabel(self.profile_frame,
-                                                     text=f"Balance: ...",
-                                                     font=customtkinter.CTkFont(size=16, weight="bold"))
+                                                     text=f"Kontostand: lädt")
         self.balance_lable.grid(row=3, column=0, pady=5, padx=5)
 
         #endregion Profile
@@ -131,18 +135,15 @@ class WalletWindow(customtkinter.CTk):
 
         self.transaction_dict = {}
 
-        self.scrollable_label_button_frame = ScrollFrame(master=self.content, width=300, command=self.label_button_frame_event, corner_radius=10)
-        self.scrollable_label_button_frame.grid(row=2, column=0, columnspan=3 ,padx=(15,15), pady=(10, 0), sticky="nsew")
+        self.transaction_list_frame = ScrollFrame(master=self.content, width=300, command=self.label_button_frame_event, corner_radius=10)
+        self.profile_frame.grid_rowconfigure((0), weight=1)
+        self.profile_frame.grid_columnconfigure((0), weight=1)
+        self.transaction_list_frame.grid(row=2, column=0, columnspan=3 ,padx=(15,15), pady=(10, 0), sticky="nsew")
 
-        for transaction in wallet_api.get_transactions(self.wallet)['txs']:
-            inputs = ""
-            for input_tx in transaction['inputs']:
-                inputs = inputs + "Von: " + input_tx['addresses'][0] + "Wert: " + str(input_tx['output_value'])
-                if len(transaction['inputs']) > 1:
-                    inputs = inputs + "\n"
-
-            self.transaction_dict[f"{inputs} \t Confirmations: {transaction['confirmations']}"] = transaction
-            self.scrollable_label_button_frame.add_item(f"{inputs} \t Confirmations: {transaction['confirmations']}" ,buttonText="View Details")
+        self.transaction_list_loading_lable = customtkinter.CTkLabel(self.transaction_list_frame,
+                                                     text=f"Transaktionen laden ...",
+                                                     font=customtkinter.CTkFont(size=20, weight="bold"))
+        self.transaction_list_loading_lable.grid(row=0, column=0, pady=5, padx=5)
         
         #endregion Transacton List
 
@@ -161,8 +162,7 @@ class WalletWindow(customtkinter.CTk):
         # Inputfeld für die Zieladdresse
 
         self.transaction_target_address_lable = customtkinter.CTkLabel(self.transacton_frame,
-                                                                       text = "Zieladresse:",
-                                                                       font=customtkinter.CTkFont(weight="bold"))
+                                                                       text = "Zieladresse:")
         self.transaction_target_address_lable.grid(row=1, column = 0, pady = (5,5), padx = (50,0))
 
         self.transaction_target_address = customtkinter.CTkEntry(self.transacton_frame,
@@ -173,8 +173,7 @@ class WalletWindow(customtkinter.CTk):
         #Inputfeld für die Anzahl der Bitcoin die überwiesen werden sollen
         #Lable
         self.transaction_amount_lable = customtkinter.CTkLabel(self.transacton_frame,
-                                                                       text = "Anzahl:",
-                                                                       font=customtkinter.CTkFont(weight="bold"))
+                                                                       text = "Anzahl:")
         self.transaction_amount_lable.grid(row=2, column = 0, pady = (5,5), padx = (50,0))
         #Input
         self.transaction_amount = customtkinter.CTkEntry(self.transacton_frame,
@@ -224,9 +223,9 @@ class WalletWindow(customtkinter.CTk):
 
         #endregion UI
 
-        self.update_balance()
+        self.after(200,self.update_all)
         self.hide_message_box()
-        
+
         # Setting the default values:
         customtkinter.set_appearance_mode("Dark")
         self.appearance_mode_optionmenu.set("Dark")
@@ -250,7 +249,7 @@ class WalletWindow(customtkinter.CTk):
         self.transaction_window = TransactionWindow(self.transaction_dict[item])
         self.transaction_window.protocol("WM_DELETE_WINDOW", self.on_close_transaction_window)
 
-        self.after(500, self.check_for_transaction_window)
+        self.after(50, self.check_for_transaction_window)
 
     def logout(self):
         import application
@@ -260,7 +259,7 @@ class WalletWindow(customtkinter.CTk):
 
     def update_balance(self):
         balance = wallet_api.get_wallet_balance(self.wallet)
-        self.balance_lable.configure(require_redraw=True, text=f"Balance: {balance} BTC")
+        self.balance_lable.configure(require_redraw=True, text=f"Kontostand: {balance} BTC")
 
     def send_transaction(self):
         target_address = self.transaction_target_address.get()
@@ -281,20 +280,20 @@ class WalletWindow(customtkinter.CTk):
             self.transaction_amount.configure(require_redraw=True, fg_color=['gray75', 'gray18'])
         
         if not valid:
-            self.show_message(message, 3)
+            self.show_message("Fehler", message, 3)
             return
         
         #check if the target address is valid
         valid = wallet_api.is_address_valid(target_address)
         if not valid:
-            self.show_message(f"{target_address} ist keine gültige Addressse", 5)
+            self.show_message("Fehler", f"{target_address} ist keine gültige Addressse", 5)
             return
 
         success, message = self.wallet.send_transaction(target_address, amount_in_btc)
         if success:
-            self.show_message("Transaktion erfolgreich gesendet")
+            self.show_message("Erfolg", "Transaktion erfolgreich gesendet")
         else:
-            self.show_message(message)
+            self.show_message("Fehler", message)
 
     def on_close_transaction_window(self):
         self.transaction_window.destroy()
@@ -302,17 +301,18 @@ class WalletWindow(customtkinter.CTk):
 
     def check_for_transaction_window(self):
         if self.transaction_window.winfo_exists():
-            self.after(500, self.check_for_transaction_window)
+            self.after(50, self.check_for_transaction_window)
             return
         self.on_close_transaction_window()
 
-    def show_message(self, message:str, duration_s:float = None):
+    def show_message(self, title:str, message:str, duration_s:float = None):
         if self.after_hide_message_box_id:
             self.after_cancel(self.after_hide_message_box_id)
             self.after_hide_message_box_id = None
 
         self.message_frame.lift()
         self.message_lable.configure(require_redraw=True, text = message)
+        self.message_title_lable.configure(require_redraw=True, text = title)
         if duration_s:
             self.after_hide_message_box_id = self.after(duration_s * 1000, self.hide_message_box)
             self.message_box_visible = True
@@ -324,8 +324,37 @@ class WalletWindow(customtkinter.CTk):
             self.after_cancel(self.after_hide_message_box_id)
             self.after_hide_message_box_id = None
 
+    def fill_transaction_list(self):
+        self.transaction_list_loading_lable.configure(text=f"Transaktionen laden ...")
+        self.transaction_list_loading_lable.lift()
+
+        transactions = wallet_api.get_transactions(self.wallet)['txs']
+
+        if len(transactions) == 0:
+            self.transaction_list_loading_lable.configure(text=f"Keine Transaktionen")
+        else:
+            self.transaction_list_loading_lable.lower()
+
+        for transaction in transactions:
+            inputs = ""
+            for input_tx in transaction['inputs']:
+                inputs = inputs + "Von: " + input_tx['addresses'][0] + "\t Wert: " + str(input_tx['output_value']/10**8) + " BTC"
+                if len(transaction['inputs']) > 1:
+                    inputs = inputs + "\n"
+
+            self.transaction_dict[f"{inputs} \t Bestätigungen: {transaction['confirmations']}"] = transaction
+            self.transaction_list_frame.add_item(f"{inputs} \t Bestätigungen: {transaction['confirmations']}" ,buttonText="Details anzeigen")
+
+    def copy_address_to_clipboard(self):
+        self.clipboard_clear()
+        self.clipboard_append(self.wallet.get_address_string())
+
+    def update_all(self):
+        self.update_balance()
+        self.fill_transaction_list()
+
 def main():
-    wallet = database_manager.login("Simon", "12345")
+    wallet = database_manager.login("Simon12345", "12345678")
     wallet_to = database_manager.login("SimonTarget", "12345")
     print(wallet)
     print(wallet_to)

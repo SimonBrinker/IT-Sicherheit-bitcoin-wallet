@@ -35,31 +35,31 @@ class RegisterWindow(customtkinter.CTkToplevel):
         register_frame.grid(row=0, column=0, padx=(50, 50), pady=(20, 20), rowspan=7, sticky="nsew")
 
         # Erstelle ein Label-Widget für die Registrierung
-        register_label = customtkinter.CTkLabel(register_frame, text="Register as a User", font=customtkinter.CTkFont(size=20, weight="bold"))
+        register_label = customtkinter.CTkLabel(register_frame, text="Registrieren", font=customtkinter.CTkFont(size=20, weight="bold"))
         register_label.grid(row=1, column=0, padx=(85, 85), pady=(20, 15))
 
         # Erstelle ein Entry-Widget für den Benutzernamen
-        self.username_entry = customtkinter.CTkEntry(register_frame, width=300, placeholder_text="Username")
+        self.username_entry = customtkinter.CTkEntry(register_frame, width=300, placeholder_text="Benutzername")
         self.username_entry.grid(row=2, column=0, padx=(25, 25), pady=(0, 15))
 
         # Erstelle ein Entry-Widget für das Passwort
-        self.password_entry = customtkinter.CTkEntry(register_frame, width=300, placeholder_text="Password", show="*")
+        self.password_entry = customtkinter.CTkEntry(register_frame, width=300, placeholder_text="Passwort", show="*")
         self.password_entry.grid(row=3, column=0, padx=(25, 25), pady=(0, 15))
 
         # Erstelle ein Entry-Widget für die Passwortbestätigung
-        self.password_2_entry = customtkinter.CTkEntry(register_frame, width=300, placeholder_text="Repeat Password", show="*")
+        self.password_2_entry = customtkinter.CTkEntry(register_frame, width=300, placeholder_text="Passwort wiederhohlen", show="*")
         self.password_2_entry.grid(row=4, column=0, padx=(25, 25), pady=(0, 15))
 
         # Erstelle ein Entry-Widget für den privaten Schlüssel
-        self.private_key_entry = customtkinter.CTkEntry(register_frame, width=300, placeholder_text="Enter Private Key")
+        self.private_key_entry = customtkinter.CTkEntry(register_frame, width=300, placeholder_text="Privater Schlüssel")
         self.private_key_entry.grid(row=5, column=0, padx=(25, 25), pady=(0, 15))
 
         # Erstelle ein CheckBox-Widget für die Option zum Erstellen einer neuen BTC-Adresse
-        self.create_btc_address = customtkinter.CTkCheckBox(register_frame, text="Create new BTC-Address?", onvalue="on", offvalue="off", command=self.toggle_Private_Key_Entry)
+        self.create_btc_address = customtkinter.CTkCheckBox(register_frame, text="Neue BTC-Adresse?", onvalue="on", offvalue="off", command=self.toggle_Private_Key_Entry)
         self.create_btc_address.grid(row=6, column=0, padx=(25, 25), pady=(0, 15))
 
         # Erstelle ein Button-Widget zum Registrieren
-        self.register_button = customtkinter.CTkButton(register_frame, text="Register!", width=300, command=self.register_account)
+        self.register_button = customtkinter.CTkButton(register_frame, text="Registrieren!", width=300, command=self.register_account)
         self.register_button.grid(row=7, column=0, padx=(25, 25), pady=(0, 0))
 
         # Erstelle ein Label-Widget für Fehlermeldungen

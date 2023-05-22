@@ -304,7 +304,7 @@ class Wallet(object):
             Exception("Error sending transaction")
             return (False, res['error'])
         print(f"Sending tranaction res: {res}")
-        return True
+        return (True, "Erfolg")
 
     def __str__(self) -> str:
         res = ""
