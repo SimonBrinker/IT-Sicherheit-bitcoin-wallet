@@ -1,7 +1,9 @@
 import customtkinter
 from wallet import Wallet, Network
 import database_manager
+from ScrollableLabelButtonFrame import ScrollableLabelButtonFrame as ScrollFrame
 import wallet_api
+from transaction_window import TransactionWindow
 
 class WalletWindow(customtkinter.CTk):
     def __init__(self, wallet: Wallet, old_root:customtkinter.CTk):
@@ -12,10 +14,21 @@ class WalletWindow(customtkinter.CTk):
 
         #region UI
 
+        self.resizable(width=False, height=False)
         
         # Window settings:
-        self.geometry("1100x580")
         self.title("Wallet")
+
+        width = 1100 # Width 
+        height = 580 # Height
+        
+        screen_width = self.winfo_screenwidth()  
+        screen_height = self.winfo_screenheight() 
+        
+        x = (screen_width/2) - (width/2)
+        y = (screen_height/2) - (height/2)
+
+        self.geometry('%dx%d+%d+%d' % (width, height, x, y))
 
         
         # Grid layout settings:
@@ -88,7 +101,7 @@ class WalletWindow(customtkinter.CTk):
         self.profile_frame = customtkinter.CTkFrame(self.content, corner_radius=10)
         self.profile_frame.grid_rowconfigure((0,1,2,3), weight=1)
         self.profile_frame.grid_columnconfigure((0), weight=1)
-        self.profile_frame.grid(row=0, column=0, columnspan = 3, stick="ewn", padx=(15,15))
+        self.profile_frame.grid(row=0, column=0, columnspan = 3, stick="ewn", padx=(15,15), pady=(0,0))
         
         self.profile_label = customtkinter.CTkLabel(self.profile_frame,
                                                     text="Profile",
@@ -112,16 +125,35 @@ class WalletWindow(customtkinter.CTk):
 
         #endregion Profile
 
+        #region Transacton List
+
+        self.transaction_dict = {}
+
+        self.scrollable_label_button_frame = ScrollFrame(master=self.content, width=300, command=self.label_button_frame_event, corner_radius=10)
+        self.scrollable_label_button_frame.grid(row=1, column=0, columnspan=3 , rowspan=6 ,padx=(15,15), pady=(5,10), sticky="nsew")
+
+        for transaction in wallet_api.get_transactions(self.wallet)['txs']:
+            inputs = ""
+            for input_tx in transaction['inputs']:
+                inputs = inputs + "Von: " + input_tx['addresses'][0] + "Wert: " + str(input_tx['output_value'])
+                if len(transaction['inputs']) > 1:
+                    inputs = inputs + "\n"
+
+            self.transaction_dict[f"{inputs} \t Confirmations: {transaction['confirmations']}"] = transaction
+            self.scrollable_label_button_frame.add_item(f"{inputs} \t Confirmations: {transaction['confirmations']}" ,buttonText="View Details")
+        
+        #endregion Transacton List
+
         #region Transaction
 
         self.transacton_frame = customtkinter.CTkFrame(self.content, corner_radius=10)
         self.transacton_frame.grid_rowconfigure((0,1,2,3), weight=1)
         self.transacton_frame.grid_columnconfigure(0, weight=1)
         self.transacton_frame.grid_columnconfigure(1, weight=4)
-        self.transacton_frame.grid(row=1, column=0, columnspan = 3, stick="ewn", padx=(15,15))
+        self.transacton_frame.grid(row=7, column=0, columnspan = 3, stick="ewn", padx=(15,15), pady=(0,10))
 
         self.transaction_title_lable = customtkinter.CTkLabel(self.transacton_frame,
-                                                    text="Transaktion",
+                                                    text="Neue Transaktion",
                                                     font=customtkinter.CTkFont(size=20, weight="bold"))
         self.transaction_title_lable.grid(row=0, column = 0, columnspan = 2, pady = (5,5))
         # Inputfeld für die Zieladdresse
@@ -129,24 +161,24 @@ class WalletWindow(customtkinter.CTk):
         self.transaction_target_address_lable = customtkinter.CTkLabel(self.transacton_frame,
                                                                        text = "Zieladresse:",
                                                                        font=customtkinter.CTkFont(weight="bold"))
-        self.transaction_target_address_lable.grid(row=1, column = 0, pady = (5,5))
+        self.transaction_target_address_lable.grid(row=1, column = 0, pady = (5,5), padx = (50,0))
 
         self.transaction_target_address = customtkinter.CTkEntry(self.transacton_frame,
                                                                 width=300,
                                                                 placeholder_text = "Zieladresse")
-        self.transaction_target_address.grid(row=1, column = 1, pady = (5,5), sticky = "we", padx=(0,5))
+        self.transaction_target_address.grid(row=1, column = 1, pady = (5,5), sticky = "we", padx=(0,50))
 
         #Inputfeld für die Anzahl der Bitcoin die überwiesen werden sollen
         #Lable
         self.transaction_amount_lable = customtkinter.CTkLabel(self.transacton_frame,
                                                                        text = "Anzahl:",
                                                                        font=customtkinter.CTkFont(weight="bold"))
-        self.transaction_amount_lable.grid(row=2, column = 0, pady = (5,5))
+        self.transaction_amount_lable.grid(row=2, column = 0, pady = (5,5), padx = (50,0))
         #Input
         self.transaction_amount = customtkinter.CTkEntry(self.transacton_frame,
                                                                 width=150,
                                                                 placeholder_text = "Anzahl Bitcoin")
-        self.transaction_amount.grid(row=2, column = 1, pady = (5,5), sticky="ew", padx=(0,5))
+        self.transaction_amount.grid(row=2, column = 1, pady = (5,5), sticky="ew", padx=(0,50))
 
         #Button zum senden der Transaktion
         self.transaction_btn_send_transaction = customtkinter.CTkButton(self.transacton_frame,
@@ -179,6 +211,13 @@ class WalletWindow(customtkinter.CTk):
         new_scaling_float = int(new_scaling.replace("%", "")) / 100
         customtkinter.set_widget_scaling(new_scaling_float)
 
+    def label_button_frame_event(self, item):
+        self.withdraw()
+        self.transaction_window = TransactionWindow(self.transaction_dict[item])
+        self.transaction_window.protocol("WM_DELETE_WINDOW", self.on_close_transaction_window)
+
+        self.after(500, self.check_for_transaction_window)
+
     def logout(self):
         self.destroy()
 
@@ -208,6 +247,16 @@ class WalletWindow(customtkinter.CTk):
         if success:
             pass
             #self.transacton_frame.
+
+    def on_close_transaction_window(self):
+        self.transaction_window.destroy()
+        self.deiconify()
+
+    def check_for_transaction_window(self):
+        if self.transaction_window.winfo_exists():
+            self.after(500, self.check_for_transaction_window)
+            return
+        self.on_close_transaction_window()
 
 def main():
     wallet = database_manager.login("Simon", "12345")
