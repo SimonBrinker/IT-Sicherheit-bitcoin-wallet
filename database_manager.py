@@ -1,6 +1,6 @@
 import sqlite3
 from wallet import Wallet, Network
-from Cryptodome.Cipher  import AES
+from Crypto.Cipher import AES
 import hashlib
 import os
 
