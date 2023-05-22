@@ -7,7 +7,7 @@ from register_window import RegisterWindow
 class MainWindow(customtkinter.CTk):
     def __init__(self):
         super().__init__()
-        self.selected_network = Network.MAINNET
+
         #region UI
         ##################################################################################
         # Window settings:#
@@ -104,7 +104,8 @@ class MainWindow(customtkinter.CTk):
         self.username_input_field.grid(row=6, column=2, padx=(15, 15), pady=(10, 10))
         self.password_input_field = customtkinter.CTkEntry(self.login_frame,
                                                            width=300,
-                                                           placeholder_text="Password")
+                                                           placeholder_text="Password",
+                                                           show="*")
         self.password_input_field.grid(row=7, column=2, padx=(15, 15))
         self.login_button = customtkinter.CTkButton(self.login_frame,
                                                     text="Login",
@@ -119,6 +120,11 @@ class MainWindow(customtkinter.CTk):
         ##################################################################################
         # Setting the default values:
         #endregion
+
+        self.server_mainnet_button.configure(state="disabled")
+        self.server_testnet_button.configure(state="normal")
+        self.login_label.configure(True, text="Login to Mainnet-Server")
+        self.selected_network = Network.MAINNET
         
         customtkinter.set_appearance_mode("Dark")
         self.appearance_mode_optionmenu.set("Dark")
