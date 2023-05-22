@@ -32,8 +32,6 @@
         </ul>
     </li>
     <li><a href="#mitwirkende">Mitwirkende des Projektes</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
 </ol>
 
 ***
@@ -48,12 +46,11 @@ Dieses Projekt wurde im Auftrag von Lukas Osterheider - Kursleiter des IT-Securi
 ### Technologien
 <a name="Technologien"></a>
 
-Eine Liste der verwendeten Technologien und Bibliotheken:
+Eine Liste der verwendeten Technologien und ein paar Bibliotheken:
 * [Python](https://www.python.org): Version 3.11.3
 * [CustomTkinter](https://customtkinter.tomschimansky.com): Version 5.1.2
-* [](): Version
-* [](): Version
-* [](): Version
+* [Sqlite3](https://docs.python.org/3/library/sqlite3.html): Version 3.39.4
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -195,6 +192,7 @@ Mit den Einstellungen lassen sich global einige Parameter anpassen:
 </div>
 
 ***
+<!-- Mitwirkende Personen am Projekt -->
 ## Mitwirkende des Projektes
 <a name="mitwirkende"></a>
 
@@ -207,5 +205,7 @@ Alle Mitglieder die am Projekt mitgewirkt haben, haben sich im gleichenmaße bet
 * Simon Brinker
 
 ***
+
+
 
 
