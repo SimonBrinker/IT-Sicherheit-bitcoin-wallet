@@ -87,7 +87,7 @@ class MainWindow(customtkinter.CTk):
                                                    width= 150, height=200)
         self.ad_bar_frame.grid(row=10, column=0)
         self.ad_label = customtkinter.CTkLabel(self.ad_bar_frame,
-                                               text="Here could be ur add!",
+                                               text="Here could be ur ad!",
                                                font=customtkinter.CTkFont(weight="bold"))
         self.ad_label.grid(row=10, column=0, padx=(10, 10), pady=(85, 85))
 
@@ -204,8 +204,11 @@ class MainWindow(customtkinter.CTk):
     def get_value(self):
         return [self.username_input_field.get(), self.password_input_field.get()]
 
-def main():
+def start_application():
     run = MainWindow()
+
+def main():
+    start_application()
 
 
 if __name__ == '__main__':

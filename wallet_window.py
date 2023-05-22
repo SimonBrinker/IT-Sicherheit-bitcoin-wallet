@@ -219,7 +219,9 @@ class WalletWindow(customtkinter.CTk):
         self.after(500, self.check_for_transaction_window)
 
     def logout(self):
+        import application
         self.destroy()
+        application.start_application()
 
     def update_balance(self):
         balance = wallet_api.get_wallet_balance(self.wallet)

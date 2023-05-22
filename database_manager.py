@@ -1,6 +1,6 @@
 import sqlite3
 from wallet import Wallet, Network
-from Crypto.Cipher import AES
+from Cryptodome.Cipher import AES
 import hashlib
 import os
 
@@ -44,7 +44,7 @@ def login(username:str, password:str) -> Wallet:
     cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
     result = cursor.fetchone()
     network:Network
-    if result[1] == 'btc-testnet':
+    if result[1] == Network.TESTNET.value:
         network = Network.TESTNET
     else:
         network = Network.MAINNET
@@ -71,10 +71,9 @@ def store_private_key(username:str, password:str, private_key:str):
 def load_private_key(username:str, password:str):
     if not os.path.exists(data_folder):
         return False
-    file = open(path_to_key_folder(username), "rb")
-
-    nonce, tag, ciphertext = [ file.read(x) for x in (16, 16, -1) ]
-    file.close()
+    with open(path_to_key_folder(username), "rb") as file:
+        nonce, tag, ciphertext = [ file.read(x) for x in (16, 16, -1) ]
+        
     key = password_to_AES_key(password)
     cipher = AES.new(key, AES.MODE_EAX, nonce)
     try:
