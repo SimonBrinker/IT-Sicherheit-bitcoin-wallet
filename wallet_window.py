@@ -151,7 +151,8 @@ class WalletWindow(customtkinter.CTk):
         #Button zum senden der Transaktion
         self.transaction_btn_send_transaction = customtkinter.CTkButton(self.transacton_frame,
                                                                         width=150,
-                                                                        text = "Senden")
+                                                                        text = "Senden",
+                                                                        command=self.send_transaction)
         self.transaction_btn_send_transaction.grid(row=3, column = 0, columnspan = 2, pady = (5,15), padx =(50,50), sticky="ew")
 
         #endregion
@@ -185,9 +186,34 @@ class WalletWindow(customtkinter.CTk):
         balance = wallet_api.get_wallet_balance(self.wallet)
         self.balance_lable.configure(text=f"Balance: {balance} BTC")
 
+    def send_transaction(self):
+        target_address = self.transaction_target_address.get()
+        amount_in_btc = self.transaction_amount.get()
+        valid = True
+        if target_address == "":
+            self.transaction_target_address.configure(fg_color=['#F9F9FA', '#343638'])
+            valid = False
+        else:
+            self.transaction_target_address.configure(fg_color=['gray75', 'gray18'])
+        if amount_in_btc == "":
+            self.transaction_amount.configure(fg_color=['#F9F9FA', '#343638'])
+            valid = False
+        else:
+            self.transaction_amount.configure(fg_color=['gray75', 'gray18'])
+        self.update()
+        if not valid:
+            return
+        
+        success = self.wallet.send_transaction(target_address, amount_in_btc)
+        if success:
+            pass
+            #self.transacton_frame.
+
 def main():
     wallet = database_manager.login("Simon", "12345")
+    #wallet_to = database_manager.login("SimonTarget", "12345")
     print(wallet)
+    #print(wallet_to)
     run = WalletWindow(wallet, None)
     run.mainloop()
 

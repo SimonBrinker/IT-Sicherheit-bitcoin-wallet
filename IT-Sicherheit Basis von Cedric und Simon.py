@@ -230,6 +230,7 @@ satoshis_to_spent = 1000
 from_address = get_public_address(from_public_key)
 to_public_key = private_Key_To_Public_Key(to_private_key)
 to_address = get_public_address(to_public_key)
+print(f"to_address: {to_address.hex()}")
 signature = get_signed_transaction(from_address, from_private_key, to_address, txid_to_spent, 1, satoshis_to_spent)
 
 print()
