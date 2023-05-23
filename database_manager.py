@@ -3,6 +3,8 @@ from wallet import Wallet, Network
 from Cryptodome.Cipher import AES
 import hashlib
 import os
+import typing
+import ecdsa
 
 connection:sqlite3.Connection
 cursor:sqlite3.Cursor
@@ -25,19 +27,23 @@ def setup():
 def create_table():
     cursor.execute("CREATE TABLE IF NOT EXISTS users (username TEXT, network TEXT)")
 
-def register(username:str, password:str, network:Network, createNew:bool, private_key="") -> tuple[bool, str]:
+def register(username:str, password:str, network:Network, createNew:bool, private_key="") -> typing.Tuple[bool | Wallet, str]:
     setup()
     cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
     result = cursor.fetchone()
     if result is not None:
         print(f"User with username '{username}' alredy exists")
         return (False, f"Benutzer existiert schon")
+    #check if the private key is valid
+    if not private_key == "":
+        if not validate_private_key(private_key):
+            return (False, "Private Key ist nicht gültig")
     cursor.execute("INSERT INTO users VALUES (?, ?)", (username, network.value))
     wallet = Wallet(username, network, createNew, private_key)
     store_private_key(username, password, wallet.private_key)
     connection.commit()
 
-    return wallet
+    return (wallet, "Erfolg")
 
 def login(username:str, password:str) -> Wallet:
     setup()
@@ -96,6 +102,26 @@ def path_to_key_folder(username:str) -> str:
     if not os.path.exists(folder):
         os.makedirs(folder)
     return os.path.join(folder, username + ".bin")
+
+def validate_private_key(private_key):
+    # Check length
+    if len(private_key.strip()) != 64:
+        return False
+
+    # Check hexadecimal format
+    if not all(c in '0123456789abcdefABCDEF' for c in private_key):
+        return False
+
+    #  Check for zero or all-one values
+    if private_key.strip('0') == '' or private_key.strip('F') == '':
+        return False
+
+    # Calculate public key
+    try:
+        sk = ecdsa.SigningKey.from_string(bytes.fromhex(private_key), curve=ecdsa.SECP256k1)
+    except:
+        return False
+    return True
 
 def main():
     setup()
