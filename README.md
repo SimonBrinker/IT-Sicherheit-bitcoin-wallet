@@ -69,7 +69,7 @@ Um CryptoUI zum laufen zubringen, müssen eventuell folgende Befehle manuell aus
 ```
 * pycryptodome
 ```sh
-  pip3 install pycryptodome
+  pip3 install pycryptodomex
 ```
 * ecdsa
 ```sh
