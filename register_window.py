@@ -111,8 +111,11 @@ class RegisterWindow(customtkinter.CTkToplevel):
                 createNew = True
             
             # Registrierung des Benutzers in der Datenbank und erstellung/speicherung der Wallet
-            wallet = database_manager.register(username, password, self.network, createNew, self.private_key_entry.get())
+            wallet, message = database_manager.register(username, password, self.network, createNew, self.private_key_entry.get())
 
+            if wallet == False:
+                self.error_Label.configure(text=message)
+                return
             database_manager.close() # Schließen der Datenbankverbindung
 
             # login nach einem erfolgreichen Registrierungsversuch

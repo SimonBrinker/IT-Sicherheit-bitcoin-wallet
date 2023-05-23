@@ -166,7 +166,7 @@ class MainWindow(customtkinter.CTk):
             if self.wallet_window is None or not self.wallet_window.winfo_exists():
                 print("Found no open Wallet-Window, creating new one!")
                 self.destroy()
-                self.wallet_window = WalletWindow(wallet, self)  # create window if its None or destroyed
+                self.wallet_window = WalletWindow(wallet, self)  # create window
 
             else:
                 print("Found a Wallet-Window-Instance running, focusing it!")
@@ -178,7 +178,7 @@ class MainWindow(customtkinter.CTk):
 
     def login_on_register(self, wallet):
         self.destroy()
-        self.wallet_window = WalletWindow(wallet, self)  # create window if its None or destroyed
+        self.wallet_window = WalletWindow(wallet, self)  # create window
 
     def create_new_account(self):
         self.withdraw()
