@@ -1,6 +1,7 @@
 import customtkinter  # Importiere das Modul customtkinter
 import database_manager  # Importiere das Modul database_manager
 from wallet import Wallet, Network  # Importiere die Klassen Wallet und Network aus dem Modul wallet
+import re
 
 class RegisterWindow(customtkinter.CTkToplevel):
     def __init__(self, network:Network, application):
@@ -92,6 +93,12 @@ class RegisterWindow(customtkinter.CTkToplevel):
         #Validierung des Passworts
         elif len(password) < 8:
             self.error_Label.configure(text="\nFehler: Das Passwort muss länger als 8\n Zeichen sein!")
+
+        elif re.search(r"\d", password) is None and re.search(r"[ !#$%&'()*+,-./[\\\]^_`{|}~"+r'"]', password) is None:
+            self.error_Label.configure(text="\nFehler: Das Passwort muss mindestens \nein Sonderzeichen oder eine Zahl\n enthalten!")
+
+        elif re.search(r"[a-z]", password) is None or re.search(r"[A-Z]", password) is None:
+            self.error_Label.configure(text="\nFehler: Das Passwort muss mindestens \neinen Großbuchstaben oder einen Kleinbuchstaben\n enthalten!")
 
         #Validierung der Passwortbestätigung
         elif password_2 != password:

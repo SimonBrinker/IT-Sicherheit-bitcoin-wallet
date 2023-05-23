@@ -4,8 +4,8 @@ class TransactionWindow(customtkinter.CTkToplevel):
     def __init__(self, transaction):
         super().__init__()
 
+        # Das Fenster soll nicht resizable sein
         self.resizable(width=False, height=False)
-
 
         width = 750  # Breite des Fensters
         height = 400  # Höhe des Fensters
@@ -19,7 +19,7 @@ class TransactionWindow(customtkinter.CTkToplevel):
         self.geometry('%dx%d+%d+%d' % (width, height, x, y))  # Setze die Fenstergeometrie
         self.title("Transaktion")  # Setze den Fenstertitel
 
-        self.columnconfigure((0,1), weight=1)
+        self.columnconfigure((0,1), weight=1) # 
         self.rowconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1)
 
         transaction_frame = customtkinter.CTkFrame(self, width=710, height=360, corner_radius=20)

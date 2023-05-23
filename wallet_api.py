@@ -43,5 +43,6 @@ def get_transaction_fee(wallet:wallet.Wallet):
     # Rückgabe der niedrigsten Gebühr pro Kilobyte (KB), aufgeteilt durch 4 nach unten abgerundet
     return fees['low_fee_per_kb'] // 4
 
+# Überprüft ob die Addresse die übergeben wird valide ist
 def is_address_valid(address):
     return blockcypher.is_valid_address(address)
