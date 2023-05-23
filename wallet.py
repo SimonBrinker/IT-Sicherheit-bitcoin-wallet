@@ -34,7 +34,7 @@ class Wallet(object):
         return (bytes.fromhex("04") + sk.verifying_key.to_string())
 
     # Generiert aus dem Private Key einen Public Key von dem sich nicht auf den Private Key zurückschließen lässt
-    def private_Key_To_Public_Key(self, s):
+    def private_key_to_public_key(self, s):
         # Dafür wird der ECDSA (Elliptic Curve Digital Signature Algorithm) genutzt
         sk = ecdsa.SigningKey.from_string(bytes.fromhex(s), curve=ecdsa.SECP256k1)
         # Zudem bekommt der Private Key noch den Prefix 04
@@ -93,19 +93,20 @@ class Wallet(object):
     # Ist die Methode für den "Pay to Public Key Hash"
     def get_p2pkh_script(self, b58_address:str):
 
-        # Fügt Hex Wert als Byte der Variable script hinzu
+        # Fügt die OP-Codes OP_DUP und OP_HASH160 hinzu
         script = bytes.fromhex("76a914")
         
+        # Die Adresse wird in das richtig format gebracht 
         decoded_address = base58.b58decode(b58_address)
         binary_address = decoded_address[1:-4]
         script += binary_address
 
-        # Fügt noch einen Hexwert als Bytes der Variable Script hinzu und gibt diese zurück
+        # Fügt die OP-Codes OP_EQUALVERIFY und OP_CHECKSIG hinzu
         script += bytes.fromhex("88ac")
         return script
 
     # Fügt die eingegebenen Daten plus ein Paar extra Daten in ein Dictionary
-    def get_raw_transaction(self, from_addr:bytes, to_addr:str, transaction_hash:list, satoshis_spend:int, amount_to_self:int):
+    def get_raw_transaction(self, to_addr:str, transaction_hash:list, satoshis_spend:int, amount_to_self:int):
 
         # Erstellt das Dictionary und fügt ein paar daten hinzu
         # Für einige Daten werden oben schon beschriebene Methoden genutzt für andere werden Standartiesierte Daten verwendet
@@ -117,6 +118,7 @@ class Wallet(object):
         transaction["sig_script_length"] = []
         transaction["sig_script"] = []
         transaction["sequence"] = []
+        # Füllen der UTXOs die verwendet werden sollen
         for i, txid in enumerate(transaction_hash):
             transaction["transaction_hash"].append(bytes.fromhex(txid['tx_hash'])[::-1])
             transaction["output_index"].append(txid['tx_output_n'])
@@ -131,6 +133,7 @@ class Wallet(object):
         transaction["satoshis"].append(satoshis_spend)
         transaction["pubkey_length"].append(25)
         transaction["pubkey_script"].append(self.get_p2pkh_script(to_addr))
+        # Erstelle den Output um die überschüssigen Satoshis an sich selbst zurückzusenden
         if amount_to_self > 0:
             transaction["satoshis"].append(amount_to_self)
             transaction["pubkey_length"].append(25)
@@ -145,9 +148,7 @@ class Wallet(object):
     # Verpackt die Daten aus dem Dicitonary in die Richtigen Formate
     def get_packed_transaction(self, transaction_dict):
 
-        # Hier wertden einige Daten aus dem Dicitonary in der Richtigen Binärdatenfolge gespeichert
-        # "<" sateht für "Little-Endian" Byte folge und das "L" für eubeb 4 Byte Unsigned integer
-        # Da es zu viel aufwand wird werde ich nicht auf alle verschiedenen Binärfolgen eingehen
+        # Das transaction dict wird in byteform umgewandelt um sie später zu verwenden
         raw_transaction  = struct.pack("<L", transaction_dict["version"])
         raw_transaction += struct.pack("<B", transaction_dict["num_inputs"])
         for i in range(transaction_dict["num_inputs"]):
@@ -177,7 +178,7 @@ class Wallet(object):
 
         return raw_transaction
 
-    # Signiert die Transaktion
+    # Gibt die signature einer (Teil-)Transaktion zurück
     def get_transaction_signature(self, transaction, private_key):
 
         # Hier wird die transaction gepacked und in einer Variable gespeichert
@@ -187,7 +188,7 @@ class Wallet(object):
         hash = hashlib.sha256(hashlib.sha256(packed_raw_transaction).digest()).digest()
 
         # Man generiert via Methoden den Public Key aus dem Private Key
-        public_key = self.private_Key_To_Public_Key(private_key)
+        public_key = self.private_key_to_public_key(private_key)
 
         # Der Key wird durch den Private Key der via Ecdsa kodiert wird signiert
         key = ecdsa.SigningKey.from_string(bytes.fromhex(private_key), curve=ecdsa.SECP256k1)
@@ -207,11 +208,13 @@ class Wallet(object):
         # Die Signatur wird dann zurückgegeben
         return sigscript
 
-    def signe_transaction(self, transaction_dict, private_key):
+    #Signiert eine vollständige transaktion
+    def sign_transaction(self, transaction_dict, private_key):
         for i in range(transaction_dict['num_inputs']):
             temp_dict = copy.deepcopy(transaction_dict)
             for j in range(temp_dict['num_inputs']):
                 if not j==i:
+                    #ersetzt das signature scipt der UTXOs die nicht gerade sigiert werden
                     temp_dict['sig_script_length'][j] = 0
                     temp_dict['sig_script'][j] = bytes.fromhex("00")
                 #print(temp_dict)
@@ -221,18 +224,16 @@ class Wallet(object):
         #print(transaction_dict)
         return transaction_dict
 
-    # Diese Methode erstellt eine Signed Transaction mithilfe der oben Beschriebenen Methoden
+    # Diese Methode erstellt eine signed Transaction
     def get_signed_transaction(self, to_addr:str, transaction_hash, amount_in_satoshis, return_to_self_amount):
-        from_addr = self.address
         from_private_key = self.private_key
-        # Es werden durch die oben gezeigten Methoden eine raw transaction erstellt und diese kriegt eine Signatur
-        raw = self.get_raw_transaction(from_addr, to_addr, transaction_hash, amount_in_satoshis, return_to_self_amount)
+        # Es wird das grundgerüst der transaktion erstellt
+        raw = self.get_raw_transaction(to_addr, transaction_hash, amount_in_satoshis, return_to_self_amount)
         
-        # # Es werden noch ein paar Einträge dem Dictionary hinzugefügt bevor die Transaction verpackt und zurück gegeben wird
-
-        raw = self.signe_transaction(raw, from_private_key)
+        # Die Transaktion wird signiert
+        raw = self.sign_transaction(raw, from_private_key)
         del raw["hash_code_type"]
-
+        # Die Transaktion wird in byteform umgewandelt
         return self.get_packed_transaction(raw)
     
 
@@ -275,17 +276,22 @@ class Wallet(object):
 
     #endregion
 
+    # Erstellt eine Transaktion und sended diese ins Netztwerk
     def send_transaction(self, target_address, amount_in_btc) -> tuple[bool, str]:
         amount_in_satoshis = int(round(float(amount_in_btc) * 100000000))
         import wallet_api
-
+        # Hole die aktuelle geschätzte Gebühr
         fee_amount = wallet_api.get_transaction_fee(self)
+        # Hohle alle UTXOs vom wallet
         available_tx = wallet_api.get_spendable_transactions(self)
         if len(available_tx) == 0:
+            # Keine UTXO für das Wallet 
             print(f"Not enough funds")
             Exception("Not enough funds")
             return (False, "Nicht genug Guthaben")
+        # Die finale Anzahl von Satoshis
         needed_amount = amount_in_satoshis + fee_amount
+        # Wähle die besten UTXOs aus
         tx_ids, change = self.select_outputs_greedy(available_tx, needed_amount)
         if tx_ids is None:
             print(f"Not enough funds")
@@ -303,7 +309,8 @@ class Wallet(object):
             print(f"Error sending transaction:{res['error']}")
             Exception("Error sending transaction")
             return (False, res['error'])
-        print(f"Sending tranaction res: {res}")
+        
+        #print(f"Sending tranaction res: {res}")
         return (True, "Erfolg")
 
     def __str__(self) -> str:
@@ -312,14 +319,3 @@ class Wallet(object):
         res += "BTC-Public-Key: " + self.public_key.hex() + "\n"
         res += "BITCOIN PUBLIC ADDRESS: " + self.address.decode('utf-8') + "\n"
         return res
-
-
-# To check address:
-# https://www.bitaddress.org/bitaddress.org-v3.3.0-SHA256-dec17c07685e1870960903d8f58090475b25af946fe95a734f88408cef4aa194.html?testnet=true
-
-def main():
-    wallte = Wallet(Network.TESTNET, True)
-    print(wallte)
-
-if __name__ == "__main__":
-    main()

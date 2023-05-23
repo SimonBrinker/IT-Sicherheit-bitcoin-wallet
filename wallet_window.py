@@ -257,54 +257,70 @@ class WalletWindow(customtkinter.CTk):
         # create a new application window
         application.start_application()
 
+    #aktualisiert den Kontostand
     def update_balance(self):
         balance = wallet_api.get_wallet_balance(self.wallet)
         self.balance_lable.configure(require_redraw=True, text=f"Kontostand: {balance} BTC")
 
     def send_transaction(self):
+        #adresse und anzahl btc aus den eigabefeldern auslesen
         target_address = self.transaction_target_address.get()
         amount_in_btc = self.transaction_amount.get()
+        #validierung der eingabe
         valid = True
+        address_valid = True
         message = ""
         if target_address == "":
-            self.transaction_target_address.configure(require_redraw=True, fg_color=['#F9F9FA', '#343638'])
-            message += "Addresse darf nicht leer sein\n"
+            message += "Adresse darf nicht leer sein\n"
+            address_valid = False
             valid = False
-        else:
-            self.transaction_target_address.configure(require_redraw=True, fg_color=['gray75', 'gray18'])
+            
         if amount_in_btc == "":
-            self.transaction_amount.configure(require_redraw=True, fg_color=['#F9F9FA', '#343638'])
-            message += "Anzahl darf nicht leer sein"
+            self.transaction_amount.configure(require_redraw=True, fg_color=['red', 'red'])
+            message += "Anzahl darf nicht leer sein\n"
             valid = False
         else:
             self.transaction_amount.configure(require_redraw=True, fg_color=['gray75', 'gray18'])
         
+        #check if the target address is valid
+        if not wallet_api.is_address_valid(target_address):
+            message += f"{target_address} ist keine gültige Addressse"
+            valid = False
+            address_valid = False
+
+        if not address_valid:
+            self.transaction_target_address.configure(require_redraw=True, fg_color=['red', 'red'])
+        else:
+            self.transaction_target_address.configure(require_redraw=True, fg_color=['gray75', 'gray18'])
+
+        self.update()
+
         if not valid:
-            self.show_message("Fehler", message, 3)
+            self.show_message("Fehler", message, 5)
             return
         
-        #check if the target address is valid
-        valid = wallet_api.is_address_valid(target_address)
-        if not valid:
-            self.show_message("Fehler", f"{target_address} ist keine gültige Addressse", 5)
-            return
+        
 
+        #try to create and send the tranaction 
         success, message = self.wallet.send_transaction(target_address, amount_in_btc)
         if success:
             self.show_message("Erfolg", "Transaktion erfolgreich gesendet")
         else:
             self.show_message("Fehler", message)
 
+    #wenn die Detailansicht einer Transaktion geschlossen wird, muss das alte Fenster wieder geöfnet werden
     def on_close_transaction_window(self):
         self.transaction_window.destroy()
         self.deiconify()
 
+    #überprüft ob die Detailansicht einer Transaktion noch offen ist
     def check_for_transaction_window(self):
         if self.transaction_window.winfo_exists():
             self.after(50, self.check_for_transaction_window)
             return
         self.on_close_transaction_window()
 
+    #zeigt die message box mit den übergbenen Werten an
     def show_message(self, title:str, message:str, duration_s:float = None):
         if self.after_hide_message_box_id:
             self.after_cancel(self.after_hide_message_box_id)
@@ -317,6 +333,7 @@ class WalletWindow(customtkinter.CTk):
             self.after_hide_message_box_id = self.after(duration_s * 1000, self.hide_message_box)
             self.message_box_visible = True
     
+    #versteckt die message box
     def hide_message_box(self):
         self.message_frame.lower()
         self.message_box_visible = False
@@ -350,7 +367,9 @@ class WalletWindow(customtkinter.CTk):
         self.clipboard_append(self.wallet.get_address_string())
 
     def update_all(self):
+        #aktualisiert den Kontostand
         self.update_balance()
+        #füllt die Transaktionsliste
         self.fill_transaction_list()
 
 def main():
