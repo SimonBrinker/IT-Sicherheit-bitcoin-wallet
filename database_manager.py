@@ -43,6 +43,10 @@ def login(username:str, password:str) -> Wallet:
     setup()
     cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
     result = cursor.fetchone()
+    if result is None:
+        #Kein Benutzer
+        return False
+    
     network:Network
     if result[1] == Network.TESTNET.value:
         network = Network.TESTNET
